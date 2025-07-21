@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Parking System - Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-purple: #E8D5F0;
+            --light-purple: #F5F0FF;
+            --dark-purple: #D4C4E3;
+            --accent-purple: #F0E6FF;
+            --medium-purple: #E0D0F0;
+            --text-dark: #4A4A4A;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--light-purple) 0%, var(--accent-purple) 50%, var(--primary-purple) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .header-section {
+            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+            color: #444;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(212, 196, 227, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #555;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: #333;
+        }
+
+        .nav-links .separator {
+            color: #666;
+            margin: 0 5px;
+        }
+
+        .profile-section {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid var(--light-purple);
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(212, 196, 227, 0.3);
+            padding: 30px;
+            margin: 0 20px;
+        }
+
+        .section-title {
+            color: var(--dark-purple);
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--medium-purple);
+            border-radius: 2px;
+        }
+
+        .parking-lot {
+            background: rgba(248, 249, 250, 0.8);
+            border: 2px solid var(--light-purple);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+            position: relative;
+            height: 100%;
+        }
+
+        .parking-lot:hover {
+            transform: translateY(-2px);
+        }
+
+        .lot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .lot-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        .lot-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-delete-lot {
+            background: #dc3545;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-delete-lot:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .btn-delete-lot:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-delete-lot:disabled:hover {
+            transform: none;
+            background: #6c757d;
+        }
+
+        .lot-status {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .status-red {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .status-green {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .status-orange {
+            color: #fd7e14;
+            font-weight: 600;
+        }
+
+        .parking-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            max-width: 100%;
+            justify-content: center;
+        }
+
+        .parking-spot {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .spot-available {
+            background-color: #28a745;
+            border-color: #1e7e34;
+            color: white;
+        }
+
+        .spot-occupied {
+            background-color: #dc3545;
+            border-color: #c82333;
+            color: white;
+        }
+
+        .spot-available:hover {
+            background-color: #218838;
+            transform: scale(1.1);
+        }
+
+        .spot-occupied:hover {
+            background-color: #c82333;
+            transform: scale(1.1);
+        }
+
+        .btn-add-lot {
+            background: linear-gradient(45deg, var(--primary-purple), var(--medium-purple));
+            border: 2px solid var(--dark-purple);
+            color: #444;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-lot:hover {
+            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+            color: #333;
+            transform: translateY(-2px);
+        }
+
+        .legend {
+            background: rgba(232, 213, 240, 0.2);
+            border: 1px solid var(--medium-purple);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .legend-spot {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+
+        .add-lot-form {
+            background: rgba(248, 249, 250, 0.9);
+            border: 2px dashed var(--medium-purple);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .form-control {
+            border: 2px solid var(--light-purple);
+            border-radius: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-control:focus {
+            border-color: var(--medium-purple);
+            box-shadow: 0 0 0 0.2rem rgba(232, 213, 240, 0.25);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dark);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--medium-purple);
+            margin-bottom: 20px;
+        }
+
+        .empty-state h4 {
+            color: var(--dark-purple);
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+        }
+
+        .confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            margin: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .clear-data-section {
+            background: rgba(255, 236, 236, 0.8);
+            border: 2px solid #ffcccb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .btn-clear-data {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-clear-data:hover {
+            background: #c82333;
+        }
+
+        /* Fix for side-by-side parking lots */
+        .parking-lots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                font-size: 0.9rem;
+            }
+            
+            .parking-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .main-content {
+                margin: 0 10px;
+                padding: 20px;
+            }
+
+            .lot-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .parking-lots-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1199px) {
+            .parking-lots-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .parking-lots-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <div class="header-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="header-title">
+                        <i class="fas fa-car me-2"></i>Admin Dashboard
+                    </h1>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-end align-items-center">
+                        <div class="nav-links me-3">
+                            <span class="text-success fw-bold">Welcome to Admin</span>
+                            <span class="separator">|</span>
+                            <a href="#" onclick="showSection('home')">Home</a>
+                            <span class="separator">|</span>
+                            <a href="#" onclick="showSection('users')">Users</a>
+                            <span class="separator">|</span>
+                            <a href="#" onclick="showSection('search')">Search</a>
+                            <span class="separator">|</span>
+                            <a href="#" onclick="showSection('summary')">Summary</a>
+                            <span class="separator">|</span>
+                            <a href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-1"></i>Logout
+                            </a>
+                        </div>
+                        <div class="profile-section">
+                            <i class="fas fa-user-edit me-2"></i>
+                            <span class="fw-bold">Edit Profile</span>
+                            <small class="text-muted ms-2">View/Edit Profile details</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="confirmation-modal">
+        <div class="modal-content">
+            <h5 id="modalTitle">Confirm Deletion</h5>
+            <p id="modalMessage">Are you sure you want to delete this parking lot?</p>
+            <div class="modal-buttons">
+                <button class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash me-1"></i>Delete
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal()">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Lot Modal -->
+    <div id="editLotModal" class="confirmation-modal">
+        <div class="modal-content">
+            <h5>Edit Parking Lot</h5>
+            <form id="editLotFormFields">
+                <div class="mb-3">
+                    <label class="form-label">Lot Name:</label>
+                    <input type="text" class="form-control" id="editLotName" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Address:</label>
+                    <input type="text" class="form-control" id="editLotAddress" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Pin Code:</label>
+                    <input type="text" class="form-control" id="editLotPinCode" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Price/Hour (₹):</label>
+                    <input type="number" class="form-control" id="editLotPrice" min="0" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check me-1"></i>Save
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditLotModal()">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title">Parking Lots Management</h2>
+                <button class="btn btn-add-lot" onclick="toggleAddLotForm()">
+                    <i class="fas fa-plus me-2"></i>Add New Lot
+                </button>
+            </div>
+
+            <!-- Add New Lot Form -->
+            <div id="addLotForm" class="add-lot-form">
+                <h5 class="mb-3">Add New Parking Lot</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Location Name:</label>
+                        <input type="text" class="form-control" id="lotName" placeholder="Location">
+                    </div>
+                    <div class="col-md-4">
+            <label class="form-label">Address:</label>
+            <input type="text" class="form-control" id="address" placeholder="123 Main Street">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Pin Code:</label>
+            <input type="text" class="form-control" id="pinCode" placeholder="400010">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Price/Hour (₹):</label>
+            <input type="number" class="form-control" id="pricePerHour" value="20" min="0">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Maximum Spots:</label>
+            <input type="number" class="form-control" id="lotSpots" value="10" min="5" max="50">
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button class="btn btn-success me-2" onclick="addNewLot()">
+                <i class="fas fa-check me-1"></i>Add
+            </button>
+            <button class="btn btn-secondary" onclick="toggleAddLotForm()">
+                <i class="fas fa-times me-1"></i>Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state">
+                <i class="fas fa-parking"></i>
+                <h4>No Parking Lots Created Yet</h4>
+                <p>Get started by adding your first parking lot using the "Add New Lot" button above.</p>
+                <p class="text-muted">All parking lots you create will be saved and persist across sessions.</p>
+            </div>
+
+            <!-- Parking Lots Container - Updated with Grid Layout -->
+            <div id="parkingLotsContainer" class="parking-lots-grid" style="display: none;">
+                <!-- Parking lots will be dynamically generated here -->
+            </div>
+
+            <!-- Legend -->
+            <div class="legend" id="legend" style="display: none;">
+                <h6 class="fw-bold mb-3">Legend:</h6>
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="legend-item">
+                            <div class="legend-spot spot-available"></div>
+                            <span>Available Spot</span>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="legend-item">
+                            <div class="legend-spot spot-occupied"></div>
+                            <span>Occupied Spot</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="legend-item">
+                            <i class="fas fa-info-circle text-info me-2"></i>
+                            <span><strong>Click spots to toggle occupancy</strong></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="legend-item">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            <span><strong>Can only delete empty lots</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clear All Data Section -->
+            <div class="clear-data-section" id="clearDataSection" style="display: none;">
+                <h6><i class="fas fa-exclamation-triangle text-warning me-2"></i>Admin Actions</h6>
+                <p class="mb-2">Clear all parking lot data (useful for testing or reset)</p>
+                <button class="btn-clear-data" onclick="clearAllData()">
+                    <i class="fas fa-trash-alt me-1"></i>Clear All Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Parking lot data - starts empty, loads from memory storage
+        let parkingLots = [];
+        let lotToDelete = null;
+        let lotToEdit = null;
+
+        // Load parking lots from memory storage (simulated persistence)
+        function loadParkingLots() {
+            const saved = sessionStorage.getItem('parkingLots');
+            if (saved) {
+                try {
+                    parkingLots = JSON.parse(saved);
+                } catch (e) {
+                    console.warn('Failed to load parking lots:', e);
+                    parkingLots = [];
+                }
+            }
+        }
+
+        // Save parking lots to memory storage
+        function saveParkingLots() {
+            sessionStorage.setItem('parkingLots', JSON.stringify(parkingLots));
+        }
+
+        // Initialize the application
+        function initializeApp() {
+            loadParkingLots();
+            updateDisplay();
+        }
+
+        // Update the display based on current state
+        function updateDisplay() {
+            const container = document.getElementById('parkingLotsContainer');
+            const emptyState = document.getElementById('emptyState');
+            const legend = document.getElementById('legend');
+            const clearDataSection = document.getElementById('clearDataSection');
+            
+            if (parkingLots.length === 0) {
+                // Show empty state
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+                legend.style.display = 'none';
+                clearDataSection.style.display = 'none';
+            } else {
+                // Show parking lots
+                container.style.display = 'grid';
+                emptyState.style.display = 'none';
+                legend.style.display = 'block';
+                clearDataSection.style.display = 'block';
+                renderAllParkingLots();
+            }
+        }
+
+        // Render all parking lots
+        function renderAllParkingLots() {
+            const container = document.getElementById('parkingLotsContainer');
+            container.innerHTML = '';
+            
+            parkingLots.forEach(lot => {
+                addLotToDOM(lot);
+                renderParkingLot(lot);
+            });
+        }
+
+        // Add lot HTML to DOM - Updated for grid layout
+        function addLotToDOM(lot) {
+            const container = document.getElementById('parkingLotsContainer');
+            const isEmpty = lot.occupiedSpots === 0;
+            const statusText = isEmpty ? 'Green | Available' : 'Red | Busy';
+            const statusClass = isEmpty ? 'status-green' : 'status-red';
+            
+            const lotHtml = `
+                <div class="parking-lot" id="lot-container-${lot.id}">
+                    <div class="lot-header">
+                        <div class="lot-title">${lot.name}</div>
+                        <div class="lot-actions">
+                            <button class="btn btn-primary" 
+                                    id="edit-btn-${lot.id}"
+                                    onclick="editLot(${lot.id})"
+                                    title="Edit this parking lot">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </button>
+                            <button class="btn-delete-lot" 
+                                    id="delete-btn-${lot.id}"
+                                    onclick="showDeleteModal(${lot.id})"
+                                    ${!isEmpty ? 'disabled' : ''}
+                                    title="${isEmpty ? 'Delete this parking lot' : 'Cannot delete - lot has occupied spots'}">
+                                <i class="fas fa-trash"></i>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="lot-status">
+                        <span class="${statusClass}" id="lot${lot.id}-status">${statusText}</span><br>
+                        <span class="status-green">(Occupied: <span id="lot${lot.id}-occupied">${lot.occupiedSpots}</span>/${lot.totalSpots})</span>
+                    </div>
+                    <div class="parking-grid" id="lot${lot.id}-grid">
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', lotHtml);
+        }
+
+        // Render parking lot spots
+        function renderParkingLot(lot) {
+            const gridElement = document.getElementById(`lot${lot.id}-grid`);
+            if (!gridElement) return;
+
+            gridElement.innerHTML = '';
+            
+            lot.spots.forEach(spot => {
+                const spotElement = document.createElement('div');
+                spotElement.className = `parking-spot ${spot.occupied ? 'spot-occupied' : 'spot-available'}`;
+                spotElement.textContent = spot.occupied ? 'O' : 'A'; // <-- Change here
+                spotElement.onclick = () => toggleSpot(lot.id, spot.id);
+                gridElement.appendChild(spotElement);
+            });
+
+            // Update delete button state and status
+            updateLotDisplay(lot);
+        }
+
+        // Update lot display (status and delete button)
+        function updateLotDisplay(lot) {
+            const deleteBtn = document.getElementById(`delete-btn-${lot.id}`);
+            const statusElement = document.getElementById(`lot${lot.id}-status`);
+            const isEmpty = lot.occupiedSpots === 0;
+            
+            if (deleteBtn) {
+                deleteBtn.disabled = !isEmpty;
+                deleteBtn.title = isEmpty ? 'Delete this parking lot' : 'Cannot delete - lot has occupied spots';
+            }
+            
+            if (statusElement) {
+                statusElement.textContent = isEmpty ? 'Green | Available' : 'Red | Busy';
+                statusElement.className = isEmpty ? 'status-green' : 'status-red';
+            }
+        }
+
+        // Toggle spot occupancy
+        function toggleSpot(lotId, spotId) {
+            const lot = parkingLots.find(l => l.id === lotId);
+            if (!lot) return;
+            
+            const spot = lot.spots.find(s => s.id === spotId);
+            if (!spot) return;
+            
+            spot.occupied = !spot.occupied;
+            lot.occupiedSpots = lot.spots.filter(s => s.occupied).length;
+            
+            // Update display
+            document.getElementById(`lot${lotId}-occupied`).textContent = lot.occupiedSpots;
+            renderParkingLot(lot);
+            
+            // Save changes
+            saveParkingLots();
+        }
+
+        // Show delete confirmation modal
+        function showDeleteModal(lotId) {
+            const lot = parkingLots.find(l => l.id === lotId);
+            if (!lot) return;
+            
+            if (lot.occupiedSpots > 0) {
+                alert('Cannot delete parking lot. All parking spots must be empty before deletion.');
+                return;
+            }
+
+            lotToDelete = lotId;
+            document.getElementById('modalTitle').textContent = 'Confirm Deletion';
+            document.getElementById('modalMessage').textContent = `Are you sure you want to delete "${lot.name}"? This action cannot be undone.`;
+            document.getElementById('confirmationModal').style.display = 'flex';
+        }
+
+        // Confirm deletion
+        function confirmDelete() {
+            if (lotToDelete === null) return;
+
+            const lotIndex = parkingLots.findIndex(l => l.id === lotToDelete);
+            if (lotIndex !== -1) {
+                // Remove from data array
+                const deletedLot = parkingLots.splice(lotIndex, 1)[0];
+                
+                // Save changes
+                saveParkingLots();
+                
+                // Update display
+                updateDisplay();
+                
+                alert(`Parking lot "${deletedLot.name}" has been permanently deleted!`);
+            }
+
+            closeModal();
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+            lotToDelete = null;
+        }
+
+        // Toggle add lot form
+        function toggleAddLotForm() {
+            const form = document.getElementById('addLotForm');
+            const isVisible = form.style.display === 'block';
+            form.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                document.getElementById('lotName').focus();
+            }
+        }
+
+        // Add new parking lot
+        function addNewLot() {
+            const nameInput = document.getElementById('lotName');
+            const spotsInput = document.getElementById('lotSpots');
+            
+            const name = nameInput.value.trim();
+            const spots = parseInt(spotsInput.value);
+            
+            if (!name) {
+                alert('Please enter a lot name');
+                nameInput.focus();
+                return;
+            }
+
+            if (spots < 5 || spots > 50) {
+                alert('Number of spots must be between 5 and 50');
+                spotsInput.focus();
+                return;
+            }
+
+            // Check for duplicate names
+            if (parkingLots.some(lot => lot.name.toLowerCase() === name.toLowerCase())) {
+                alert('A parking lot with this name already exists. Please choose a different name.');
+                nameInput.focus();
+                return;
+            }
+
+            const newLot = {
+                id: Date.now(), // Use timestamp as unique ID
+                name: name,
+                totalSpots: spots,
+                occupiedSpots: 0,
+                spots: []
+            };
+
+            // Generate spots
+            for (let i = 1; i <= newLot.totalSpots; i++) {
+                newLot.spots.push({
+                    id: i,
+                    occupied: false,
+                    type: 'A' // Default spot type
+                });
+            }
+
+            parkingLots.push(newLot);
+            saveParkingLots();
+            updateDisplay();
+            
+            // Reset form
+            nameInput.value = '';
+            spotsInput.value = '10';
+            toggleAddLotForm();
+
+            alert(`Parking lot "${newLot.name}" with ${newLot.totalSpots} spots has been created successfully!`);
+        }
+
+        // Clear all parking lot data
+        function clearAllData() {
+            if (parkingLots.length === 0) {
+                alert('No data to clear.');
+                return;
+            }
+
+            if (confirm('Are you sure you want to delete ALL parking lots? This action cannot be undone.')) {
+                parkingLots = [];
+                saveParkingLots();
+                updateDisplay();
+                alert('All parking lot data has been cleared.');
+            }
+        }
+
+        // Navigation functions
+        function showSection(section) {
+            if (section === 'home') {
+                // Do nothing, already on home page
+                return;
+            }
+            alert(`Navigating to ${section} section (not implemented in this demo)`);
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear session data on logout
+                sessionStorage.removeItem('parkingLots');
+                alert('Logged out successfully!');
+                // In a real app: window.location.href = '/login';
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('confirmationModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        // Edit lot functionality
+        // Show Edit Lot Modal with current values
+        function editLot(lotId) {
+            const lot = parkingLots.find(l => l.id === lotId);
+            if (!lot) return;
+
+            lotToEdit = lotId;
+            document.getElementById('editLotName').value = lot.name || '';
+            document.getElementById('editLotAddress').value = lot.address || '';
+            document.getElementById('editLotPinCode').value = lot.pinCode || '';
+            document.getElementById('editLotPrice').value = lot.pricePerHour || '';
+
+            document.getElementById('editLotModal').style.display = 'flex';
+        }
+
+        // Save changes from Edit Lot Modal
+        document.getElementById('editLotFormFields').onsubmit = function(e) {
+            e.preventDefault();
+            if (lotToEdit === null) return;
+
+            const lot = parkingLots.find(l => l.id === lotToEdit);
+            if (!lot) return;
+
+            // Get new values
+            const newName = document.getElementById('editLotName').value.trim();
+            const newAddress = document.getElementById('editLotAddress').value.trim();
+            const newPinCode = document.getElementById('editLotPinCode').value.trim();
+            const newPrice = parseFloat(document.getElementById('editLotPrice').value);
+
+            // Validation
+            if (!newName) {
+                alert('Lot name cannot be empty.');
+                return;
+            }
+            if (!newAddress) {
+                alert('Address cannot be empty.');
+                return;
+            }
+            if (!newPinCode) {
+                alert('Pin code cannot be empty.');
+                return;
+            }
+            if (isNaN(newPrice) || newPrice < 0) {
+                alert('Price must be a valid number.');
+                return;
+            }
+
+            // Prevent duplicate names (except for current lot)
+            if (parkingLots.some(l => l.id !== lotToEdit && l.name.toLowerCase() === newName.toLowerCase())) {
+                alert('A parking lot with this name already exists. Please choose a different name.');
+                return;
+            }
+
+            // Save changes
+            lot.name = newName;
+            lot.address = newAddress;
+            lot.pinCode = newPinCode;
+            lot.pricePerHour = newPrice;
+
+            saveParkingLots();
+            updateDisplay();
+            closeEditLotModal();
+            alert('Parking lot updated successfully!');
+        };
+
+        // Close Edit Lot Modal
+        function closeEditLotModal() {
+            document.getElementById('editLotModal').style.display = 'none';
+            lotToEdit = null;
+        }
+    </script>
+</body>
+</html>
