@@ -495,6 +495,19 @@
         </div>
     </div>
 
+    <!-- Occupied Spot Details Modal (for delete action) -->
+    <div id="occupiedSpotDetailsModal" class="confirmation-modal">
+        <div class="modal-content" style="max-width: 420px;">
+            <h5>Occupied Parking Spot Details</h5>
+            <div id="occupiedSpotDetailsContent" class="text-start mb-3"></div>
+            <div class="modal-buttons">
+                <button type="button" class="btn btn-secondary" onclick="closeOccupiedSpotDetailsModal()">
+                    <i class="fas fa-times me-1"></i>Close
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <div class="container-fluid">
         <div class="main-content">
@@ -599,32 +612,30 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Parking lot data - starts empty, loads from memory storage
+        // Use backend API instead of sessionStorage
         let parkingLots = [];
         let lotToDelete = null;
         let lotToEdit = null;
 
-        // Load parking lots from memory storage (simulated persistence)
-        function loadParkingLots() {
-            const saved = sessionStorage.getItem('parkingLots');
-            if (saved) {
-                try {
-                    parkingLots = JSON.parse(saved);
-                } catch (e) {
-                    console.warn('Failed to load parking lots:', e);
-                    parkingLots = [];
-                }
+        // Load parking lots from backend
+        async function loadParkingLots() {
+            try {
+                const response = await fetch('/api/lots');
+                parkingLots = await response.json();
+            } catch (e) {
+                console.warn('Failed to load parking lots:', e);
+                parkingLots = [];
             }
         }
 
-        // Save parking lots to memory storage
+        // Save parking lots: handled by backend, so only update after API calls
         function saveParkingLots() {
-            sessionStorage.setItem('parkingLots', JSON.stringify(parkingLots));
+            // No-op: handled by backend
         }
 
         // Initialize the application
-        function initializeApp() {
-            loadParkingLots();
+        async function initializeApp() {
+            await loadParkingLots();
             updateDisplay();
         }
 
@@ -636,13 +647,11 @@
             const clearDataSection = document.getElementById('clearDataSection');
             
             if (parkingLots.length === 0) {
-                // Show empty state
                 container.style.display = 'none';
                 emptyState.style.display = 'block';
                 legend.style.display = 'none';
                 clearDataSection.style.display = 'none';
             } else {
-                // Show parking lots
                 container.style.display = 'grid';
                 emptyState.style.display = 'none';
                 legend.style.display = 'block';
@@ -655,7 +664,6 @@
         function renderAllParkingLots() {
             const container = document.getElementById('parkingLotsContainer');
             container.innerHTML = '';
-            
             parkingLots.forEach(lot => {
                 addLotToDOM(lot);
                 renderParkingLot(lot);
@@ -713,12 +721,11 @@
             lot.spots.forEach(spot => {
                 const spotElement = document.createElement('div');
                 spotElement.className = `parking-spot ${spot.occupied ? 'spot-occupied' : 'spot-available'}`;
-                spotElement.textContent = spot.occupied ? 'O' : 'A'; // <-- Change here
+                spotElement.textContent = spot.occupied ? 'O' : 'A';
                 spotElement.onclick = () => toggleSpot(lot.id, spot.id);
                 gridElement.appendChild(spotElement);
             });
 
-            // Update delete button state and status
             updateLotDisplay(lot);
         }
 
@@ -739,32 +746,24 @@
             }
         }
 
-        // Toggle spot occupancy
-        function toggleSpot(lotId, spotId) {
-            const lot = parkingLots.find(l => l.id === lotId);
-            if (!lot) return;
-            
-            const spot = lot.spots.find(s => s.id === spotId);
-            if (!spot) return;
-            
-            spot.occupied = !spot.occupied;
-            lot.occupiedSpots = lot.spots.filter(s => s.occupied).length;
-            
-            // Update display
-            document.getElementById(`lot${lotId}-occupied`).textContent = lot.occupiedSpots;
-            renderParkingLot(lot);
-            
-            // Save changes
-            saveParkingLots();
+        // Toggle spot occupancy (API call)
+        async function toggleSpot(lotId, spotId) {
+            const response = await fetch(`/api/lots/${lotId}/spots/${spotId}/toggle`, { method: 'POST' });
+            if (response.ok) {
+                await loadParkingLots();
+                updateDisplay();
+            } else {
+                alert('Failed to update spot.');
+            }
         }
 
         // Show delete confirmation modal
         function showDeleteModal(lotId) {
             const lot = parkingLots.find(l => l.id === lotId);
             if (!lot) return;
-            
+
             if (lot.occupiedSpots > 0) {
-                alert('Cannot delete parking lot. All parking spots must be empty before deletion.');
+                showOccupiedSpotsForLot(lot);
                 return;
             }
 
@@ -774,24 +773,62 @@
             document.getElementById('confirmationModal').style.display = 'flex';
         }
 
-        // Confirm deletion
-        function confirmDelete() {
+        // Show all occupied spots for a lot in a modal
+        function showOccupiedSpotsForLot(lot) {
+            let html = `<div><strong>Occupied Spots in "${lot.name}"</strong></div><hr>`;
+            lot.spots.filter(s => s.occupied).forEach(s => {
+                html += `
+                    <div class="mb-2">
+                        <span><strong>Spot ID:</strong> ${s.id}</span>
+                        <button class="btn btn-outline-info btn-sm ms-2" onclick="showOccupiedSpotDetails(${lot.id}, ${s.id})">
+                            View Details
+                        </button>
+                    </div>
+                `;
+            });
+            html += `<div class="mt-2 text-muted" style="font-size:0.95em;">Click "View Details" to see customer info for each occupied spot.</div>`;
+            document.getElementById('occupiedSpotDetailsContent').innerHTML = html;
+            document.getElementById('occupiedSpotDetailsModal').style.display = 'flex';
+        }
+
+        // Show details for a specific occupied spot
+        function showOccupiedSpotDetails(lotId, spotId) {
+            const lot = parkingLots.find(l => l.id === lotId);
+            if (!lot) return;
+            const spot = lot.spots.find(s => s.id === spotId);
+            if (!spot || !spot.occupied) return;
+
+            let html = `
+                <div><strong>ID:</strong> ${spot.id}</div>
+                <div><strong>Customer ID:</strong> ${spot.customer?.id || 'N/A'}</div>
+                <div><strong>Vehicle number:</strong> ${spot.customer?.vehicleNumber || 'N/A'}</div>
+                <div><strong>Date/time of parking:</strong> ${spot.customer?.entryDate || 'N/A'}</div>
+                <div><strong>Est. parking cost:</strong> ₹${lot.pricePerHour ? lot.pricePerHour : 'N/A'} / hour</div>
+            `;
+            document.getElementById('occupiedSpotDetailsContent').innerHTML = html +
+                `<div class="modal-buttons mt-3">
+                    <button type="button" class="btn btn-secondary" onclick="closeOccupiedSpotDetailsModal()">
+                        <i class="fas fa-times me-1"></i>Close
+                    </button>
+                </div>`;
+        }
+
+        // Close occupied spot details modal
+        function closeOccupiedSpotDetailsModal() {
+            document.getElementById('occupiedSpotDetailsModal').style.display = 'none';
+        }
+
+        // Confirm deletion (API call)
+        async function confirmDelete() {
             if (lotToDelete === null) return;
-
-            const lotIndex = parkingLots.findIndex(l => l.id === lotToDelete);
-            if (lotIndex !== -1) {
-                // Remove from data array
-                const deletedLot = parkingLots.splice(lotIndex, 1)[0];
-                
-                // Save changes
-                saveParkingLots();
-                
-                // Update display
+            const response = await fetch(`/api/lots/${lotToDelete}`, { method: 'DELETE' });
+            if (response.ok) {
+                await loadParkingLots();
                 updateDisplay();
-                
-                alert(`Parking lot "${deletedLot.name}" has been permanently deleted!`);
+                alert('Parking lot has been permanently deleted!');
+            } else {
+                alert('Failed to delete parking lot.');
             }
-
             closeModal();
         }
 
@@ -806,80 +843,77 @@
             const form = document.getElementById('addLotForm');
             const isVisible = form.style.display === 'block';
             form.style.display = isVisible ? 'none' : 'block';
-            
             if (!isVisible) {
                 document.getElementById('lotName').focus();
             }
         }
 
-        // Add new parking lot
-        function addNewLot() {
+        // Add new parking lot (API call)
+        async function addNewLot() {
             const nameInput = document.getElementById('lotName');
             const spotsInput = document.getElementById('lotSpots');
-            
+            const addressInput = document.getElementById('address');
+            const pinCodeInput = document.getElementById('pinCode');
+            const priceInput = document.getElementById('pricePerHour');
+
             const name = nameInput.value.trim();
             const spots = parseInt(spotsInput.value);
-            
+            const address = addressInput.value.trim();
+            const pinCode = pinCodeInput.value.trim();
+            const pricePerHour = parseFloat(priceInput.value);
+
             if (!name) {
                 alert('Please enter a lot name');
                 nameInput.focus();
                 return;
             }
-
             if (spots < 5 || spots > 50) {
                 alert('Number of spots must be between 5 and 50');
                 spotsInput.focus();
                 return;
             }
-
-            // Check for duplicate names
             if (parkingLots.some(lot => lot.name.toLowerCase() === name.toLowerCase())) {
                 alert('A parking lot with this name already exists. Please choose a different name.');
                 nameInput.focus();
                 return;
             }
 
-            const newLot = {
-                id: Date.now(), // Use timestamp as unique ID
-                name: name,
-                totalSpots: spots,
-                occupiedSpots: 0,
-                spots: []
-            };
-
-            // Generate spots
-            for (let i = 1; i <= newLot.totalSpots; i++) {
-                newLot.spots.push({
-                    id: i,
-                    occupied: false,
-                    type: 'A' // Default spot type
-                });
+            const response = await fetch('/api/lots', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name,
+                    address,
+                    pinCode,
+                    pricePerHour,
+                    totalSpots: spots
+                })
+            });
+            if (response.ok) {
+                await loadParkingLots();
+                updateDisplay();
+                toggleAddLotForm();
+                alert(`Parking lot "${name}" with ${spots} spots has been created successfully!`);
+            } else {
+                alert('Failed to create parking lot.');
             }
-
-            parkingLots.push(newLot);
-            saveParkingLots();
-            updateDisplay();
-            
-            // Reset form
-            nameInput.value = '';
-            spotsInput.value = '10';
-            toggleAddLotForm();
-
-            alert(`Parking lot "${newLot.name}" with ${newLot.totalSpots} spots has been created successfully!`);
         }
 
-        // Clear all parking lot data
-        function clearAllData() {
+        // Clear all parking lot data (API call)
+        async function clearAllData() {
             if (parkingLots.length === 0) {
                 alert('No data to clear.');
                 return;
             }
-
             if (confirm('Are you sure you want to delete ALL parking lots? This action cannot be undone.')) {
-                parkingLots = [];
-                saveParkingLots();
-                updateDisplay();
-                alert('All parking lot data has been cleared.');
+                const response = await fetch('/api/lots', { method: 'DELETE' });
+                if (response.ok) {
+                    await loadParkingLots();
+                    updateDisplay();
+                    alert('All parking lot data has been cleared.');
+                } else {
+                    alert('Failed to clear parking lot data.');
+                }
             }
         }
 
@@ -894,8 +928,6 @@
 
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
-                // Clear session data on logout
-                sessionStorage.removeItem('parkingLots');
                 alert('Logged out successfully!');
                 // In a real app: window.location.href = '/login';
             }
@@ -929,21 +961,19 @@
             document.getElementById('editLotModal').style.display = 'flex';
         }
 
-        // Save changes from Edit Lot Modal
-        document.getElementById('editLotFormFields').onsubmit = function(e) {
+        // Save changes from Edit Lot Modal (API call)
+        document.getElementById('editLotFormFields').onsubmit = async function(e) {
             e.preventDefault();
             if (lotToEdit === null) return;
 
             const lot = parkingLots.find(l => l.id === lotToEdit);
             if (!lot) return;
 
-            // Get new values
             const newName = document.getElementById('editLotName').value.trim();
             const newAddress = document.getElementById('editLotAddress').value.trim();
             const newPinCode = document.getElementById('editLotPinCode').value.trim();
             const newPrice = parseFloat(document.getElementById('editLotPrice').value);
 
-            // Validation
             if (!newName) {
                 alert('Lot name cannot be empty.');
                 return;
@@ -960,23 +990,29 @@
                 alert('Price must be a valid number.');
                 return;
             }
-
-            // Prevent duplicate names (except for current lot)
             if (parkingLots.some(l => l.id !== lotToEdit && l.name.toLowerCase() === newName.toLowerCase())) {
                 alert('A parking lot with this name already exists. Please choose a different name.');
                 return;
             }
 
-            // Save changes
-            lot.name = newName;
-            lot.address = newAddress;
-            lot.pinCode = newPinCode;
-            lot.pricePerHour = newPrice;
-
-            saveParkingLots();
-            updateDisplay();
-            closeEditLotModal();
-            alert('Parking lot updated successfully!');
+            const response = await fetch(`/api/lots/${lotToEdit}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: newName,
+                    address: newAddress,
+                    pinCode: newPinCode,
+                    pricePerHour: newPrice
+                })
+            });
+            if (response.ok) {
+                await loadParkingLots();
+                updateDisplay();
+                closeEditLotModal();
+                alert('Parking lot updated successfully!');
+            } else {
+                alert('Failed to update parking lot.');
+            }
         };
 
         // Close Edit Lot Modal
