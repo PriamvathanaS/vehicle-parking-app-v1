@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Parking System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-purple: #E8D5F0;
+            --light-purple: #F5F0FF;
+            --dark-purple: #D4C4E3;
+            --accent-purple: #F0E6FF;
+            --medium-purple: #E0D0F0;
+            --text-dark: #4A4A4A;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--light-purple) 0%, var(--accent-purple) 50%, var(--primary-purple) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+        }
+
+        /* Background image on sides only */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('your-image-path-here.jpg'); /* Replace with your image path */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.2; /* Adjust transparency */
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Mask to hide background image behind the form */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 520px; /* Slightly wider than form to create clean edges */
+            height: 100%;
+            background: linear-gradient(135deg, var(--light-purple) 0%, var(--accent-purple) 50%, var(--primary-purple) 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(212, 196, 227, 0.4);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-container {
+            padding: 40px;
+            position: relative;
+        }
+
+        .header-section {
+            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+            color: #444;
+            text-align: center;
+            padding: 30px 20px;
+            position: relative;
+        }
+
+        .header-section h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .parking-icon {
+            font-size: 3rem;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .form-title {
+            color: var(--dark-purple);
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .form-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: var(--medium-purple);
+            border-radius: 2px;
+        }
+
+        .form-label {
+            color: var(--text-dark);
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        .form-control {
+            border: 2px solid var(--light-purple);
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            transition: border-color 0.3s ease;
+            position: relative;
+        }
+
+        .form-control:focus {
+            border-color: var(--medium-purple);
+            box-shadow: 0 0 0 0.2rem rgba(232, 213, 240, 0.35);
+            background: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-purple), var(--medium-purple));
+            border: 2px solid var(--dark-purple);
+            color: #444;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+            color: #333;
+            transform: translateY(-2px);
+        }
+
+        .toggle-link {
+            color: var(--medium-purple);
+            text-decoration: none;
+            font-weight: 500;
+            text-align: center;
+            display: block;
+            margin-top: 20px;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .toggle-link:hover {
+            color: var(--dark-purple);
+            text-decoration: underline;
+        }
+
+        .admin-notice {
+            background: rgba(232, 213, 240, 0.3);
+            border: 1px solid var(--medium-purple);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .admin-notice i {
+            color: var(--medium-purple);
+            margin-right: 8px;
+        }
+
+        .d-none {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 576px) {
+            .form-container {
+                padding: 30px 25px;
+            }
+            
+            .header-section h1 {
+                font-size: 1.8rem;
+            }
+            
+            .form-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="auth-wrapper">
+            <!-- Header Section -->
+            <div class="header-section">
+                <i class="fas fa-car parking-icon"></i>
+                <h1>Vehicle Parking System</h1>
+                
+            </div>
+
+            <!-- Form Container -->
+            <div class="form-container">
+                
+                <!-- Login Form -->
+                <div id="loginForm">
+                    <h2 class="form-title">User Login</h2>
+                    <form method="POST" action="/login">
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Registered Email ID:</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password:</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </button>
+                    </form>
+
+                    <a href="#" class="toggle-link" onclick="toggleForm()">Create Account?</a>
+                    
+                    <div class="admin-notice">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Admin Access:</strong> No registration required for Admin users
+                        <br><small><a href="/admin-login" class="text-decoration-none">Admin Login Here</a></small>
+                    </div>
+                </div>
+
+                <!-- Signup Form -->
+                <div id="signupForm" class="d-none">
+                    <h2 class="form-title">User Signup</h2>
+                    <form method="POST" action="/register">
+
+                        <div class="mb-3">
+                            <label for="signup_email" class="form-label">Email ID (Username):</label>
+                            <input type="email" class="form-control" id="signup_email" name="email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="signup_password" class="form-label">Password:</label>
+                            <input type="password" class="form-control" id="signup_password" name="password" minlength="6" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fullname" class="form-label">Full Name:</label>
+                            <input type="text" class="form-control" id="fullname" name="fullname" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address:</label>
+                            <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="pincode" class="form-label">Pin Code:</label>
+                            <input type="text" class="form-control" id="pincode" name="pincode" pattern="[0-9]{6}" maxlength="6" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Register
+                        </button>
+                    </form>
+
+                    <a href="#" class="toggle-link" onclick="toggleForm()">Login here!</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Simple form toggle script -->
+    <script>
+        function toggleForm() {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            
+            if (loginForm.classList.contains('d-none')) {
+                signupForm.classList.add('d-none');
+                loginForm.classList.remove('d-none');
+                loginForm.classList.add('fade-in');
+            } else {
+                loginForm.classList.add('d-none');
+                signupForm.classList.remove('d-none');
+                signupForm.classList.add('fade-in');
+            }
+        }
+    </script>
+</body>
+</html>
