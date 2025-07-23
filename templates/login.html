@@ -208,6 +208,78 @@
             animation: fadeIn 0.5s ease-in;
         }
 
+        /* Flash Messages Styling */
+        .flash-messages {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .alert {
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: none;
+            margin-bottom: 10px;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        /* Quick Access Info Box */
+        .quick-access {
+            background: rgba(232, 213, 240, 0.2);
+            border: 1px solid var(--medium-purple);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+        }
+
+        .quick-access h6 {
+            color: var(--dark-purple);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .quick-access .credential-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .quick-access .credential-label {
+            font-weight: 500;
+        }
+
+        .quick-access .credential-value {
+            font-family: monospace;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -225,17 +297,41 @@
             .form-title {
                 font-size: 1.5rem;
             }
+
+            .flash-messages {
+                width: 95%;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
+                        {% if category == 'success' %}
+                            <i class="fas fa-check-circle me-2"></i>
+                        {% elif category == 'error' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle me-2"></i>
+                        {% endif %}
+                        <strong>{{ message }}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
     <div class="main-container">
         <div class="auth-wrapper">
             <!-- Header Section -->
             <div class="header-section">
                 <i class="fas fa-car parking-icon"></i>
                 <h1>Vehicle Parking System</h1>
-                
             </div>
 
             <!-- Form Container -->
@@ -247,13 +343,19 @@
                     <form method="POST" action="/login">
                         
                         <div class="mb-3">
-                            <label for="email" class="form-label">Registered Email ID:</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Registered Email ID:
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" required 
+                                   placeholder="Enter your email address">
                         </div>
 
                         <div class="mb-3">
-                            <label for="password" class="form-label">Password:</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Password:
+                            </label>
+                            <input type="password" class="form-control" id="password" name="password" required
+                                   placeholder="Enter your password">
                         </div>
 
                         <button type="submit" class="btn btn-primary">
@@ -261,43 +363,58 @@
                         </button>
                     </form>
 
-                    <a href="#" class="toggle-link" onclick="toggleForm()">Create Account?</a>
-                    
-                    <div class="admin-notice">
-                        <i class="fas fa-info-circle"></i>
-                        <strong>Admin Access:</strong> No registration required for Admin users
-                        <br><small><a href="/admin-login" class="text-decoration-none">Admin Login Here</a></small>
-                    </div>
+                    <a href="#" class="toggle-link" onclick="toggleForm()">
+                        <i class="fas fa-user-plus me-1"></i>Don't have an account? Create one!
+                    </a>
+
+                  
                 </div>
 
                 <!-- Signup Form -->
                 <div id="signupForm" class="d-none">
-                    <h2 class="form-title">User Signup</h2>
+                    <h2 class="form-title">User Registration</h2>
                     <form method="POST" action="/register">
 
                         <div class="mb-3">
-                            <label for="signup_email" class="form-label">Email ID (Username):</label>
-                            <input type="email" class="form-control" id="signup_email" name="email" required>
+                            <label for="signup_email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email ID (Username):
+                            </label>
+                            <input type="email" class="form-control" id="signup_email" name="email" required
+                                   placeholder="Enter your email address">
                         </div>
 
                         <div class="mb-3">
-                            <label for="signup_password" class="form-label">Password:</label>
-                            <input type="password" class="form-control" id="signup_password" name="password" minlength="6" required>
+                            <label for="signup_password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Password:
+                            </label>
+                            <input type="password" class="form-control" id="signup_password" name="password" 
+                                   minlength="6" required placeholder="Create a strong password (min 6 characters)">
                         </div>
 
                         <div class="mb-3">
-                            <label for="fullname" class="form-label">Full Name:</label>
-                            <input type="text" class="form-control" id="fullname" name="fullname" required>
+                            <label for="fullname" class="form-label">
+                                <i class="fas fa-user me-2"></i>Full Name:
+                            </label>
+                            <input type="text" class="form-control" id="fullname" name="fullname" required
+                                   placeholder="Enter your full name">
                         </div>
 
                         <div class="mb-3">
-                            <label for="address" class="form-label">Address:</label>
-                            <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+                            <label for="address" class="form-label">
+                                <i class="fas fa-map-marker-alt me-2"></i>Address:
+                            </label>
+                            <textarea class="form-control" id="address" name="address" rows="2" required
+                                      placeholder="Enter your complete address"></textarea>
                         </div>
 
                         <div class="mb-3">
-                            <label for="pincode" class="form-label">Pin Code:</label>
-                            <input type="text" class="form-control" id="pincode" name="pincode" pattern="[0-9]{6}" maxlength="6" required>
+                            <label for="pincode" class="form-label">
+                                <i class="fas fa-map-pin me-2"></i>Pin Code:
+                            </label>
+                            <input type="text" class="form-control" id="pincode" name="pincode" 
+                                   pattern="[0-9]{6}" maxlength="6" required
+                                   placeholder="Enter 6-digit pin code">
+                            <small class="form-text text-muted">Enter exactly 6 digits</small>
                         </div>
 
                         <button type="submit" class="btn btn-primary">
@@ -305,7 +422,9 @@
                         </button>
                     </form>
 
-                    <a href="#" class="toggle-link" onclick="toggleForm()">Login here!</a>
+                    <a href="#" class="toggle-link" onclick="toggleForm()">
+                        <i class="fas fa-sign-in-alt me-1"></i>Already have an account? Login here!
+                    </a>
                 </div>
             </div>
         </div>
@@ -313,22 +432,110 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Simple form toggle script -->
     <script>
+        // Form toggle functionality
         function toggleForm() {
             const loginForm = document.getElementById('loginForm');
             const signupForm = document.getElementById('signupForm');
             
             if (loginForm.classList.contains('d-none')) {
+                // Show login form
                 signupForm.classList.add('d-none');
                 loginForm.classList.remove('d-none');
                 loginForm.classList.add('fade-in');
+                
+                // Clear signup form
+                document.getElementById('signupForm').querySelectorAll('input, textarea').forEach(input => {
+                    input.value = '';
+                });
             } else {
+                // Show signup form
                 loginForm.classList.add('d-none');
                 signupForm.classList.remove('d-none');
                 signupForm.classList.add('fade-in');
+                
+                // Clear login form
+                document.getElementById('loginForm').querySelectorAll('input').forEach(input => {
+                    input.value = '';
+                });
             }
         }
+
+        // Auto-dismiss flash messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000); // 5 seconds
+            });
+        });
+
+        // Quick fill admin credentials (for testing only)
+        function fillAdminCredentials() {
+            document.getElementById('email').value = 'admin@gmail.com';
+            document.getElementById('password').value = 'Admin@123';
+        }
+
+        // Add double-click handler to the quick access box for easy testing
+        document.addEventListener('DOMContentLoaded', function() {
+            const quickAccess = document.querySelector('.quick-access');
+            if (quickAccess) {
+                quickAccess.addEventListener('dblclick', function() {
+                    fillAdminCredentials();
+                    // Add visual feedback
+                    this.style.background = 'rgba(40, 167, 69, 0.1)';
+                    setTimeout(() => {
+                        this.style.background = 'rgba(232, 213, 240, 0.2)';
+                    }, 1000);
+                });
+                
+                // Add tooltip
+                quickAccess.title = 'Double-click to auto-fill admin credentials';
+            }
+        });
+
+        // Form validation enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pin code validation
+            const pincodeInput = document.getElementById('pincode');
+            if (pincodeInput) {
+                pincodeInput.addEventListener('input', function(e) {
+                    // Only allow numbers
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    
+                    // Limit to 6 digits
+                    if (this.value.length > 6) {
+                        this.value = this.value.slice(0, 6);
+                    }
+                });
+            }
+
+            // Password strength indicator (optional)
+            const passwordInput = document.getElementById('signup_password');
+            if (passwordInput) {
+                passwordInput.addEventListener('input', function(e) {
+                    const password = this.value;
+                    let strength = 0;
+                    
+                    if (password.length >= 6) strength++;
+                    if (password.match(/[a-z]+/)) strength++;
+                    if (password.match(/[A-Z]+/)) strength++;
+                    if (password.match(/[0-9]+/)) strength++;
+                    if (password.match(/[^A-Za-z0-9]+/)) strength++;
+                    
+                    // Update border color based on strength
+                    if (strength < 2) {
+                        this.style.borderColor = '#dc3545';
+                    } else if (strength < 4) {
+                        this.style.borderColor = '#ffc107';
+                    } else {
+                        this.style.borderColor = '#28a745';
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
