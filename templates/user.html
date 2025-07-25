@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Parking System - User Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-purple: #E8D5F0;
+            --light-purple: #F5F0FF;
+            --dark-purple: #D4C4E3;
+            --accent-purple: #F0E6FF;
+            --medium-purple: #E0D0F0;
+            --text-dark: #4A4A4A;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--light-purple) 0%, var(--accent-purple) 50%, var(--primary-purple) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .header-section {
+            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+            color: #444;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(212, 196, 227, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #555;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: #333;
+        }
+
+        .nav-links .separator {
+            color: #666;
+            margin: 0 5px;
+        }
+
+        .profile-section {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid var(--light-purple);
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(212, 196, 227, 0.3);
+            padding: 30px;
+            margin: 0 20px;
+        }
+
+        .section-title {
+            color: var(--dark-purple);
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--medium-purple);
+            border-radius: 2px;
+        }
+
+        .parking-lot {
+            background: rgba(248, 249, 250, 0.8);
+            border: 2px solid var(--light-purple);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .parking-lot:hover {
+            transform: translateY(-2px);
+        }
+
+        .lot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .lot-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        .lot-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .lot-status {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .status-green {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .status-red {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .parking-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            max-width: 100%;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .parking-spot {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .spot-available {
+            background-color: #28a745;
+            border-color: #1e7e34;
+            color: white;
+            cursor: pointer;
+        }
+
+        .spot-occupied {
+            background-color: #dc3545;
+            border-color: #c82333;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .spot-available:hover {
+            background-color: #218838;
+            transform: scale(1.1);
+        }
+
+        .parking-lots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .welcome-section {
+            background: rgba(0, 123, 255, 0.1);
+            border: 2px solid #007bff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dark);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--medium-purple);
+            margin-bottom: 20px;
+        }
+
+        .legend {
+            background: rgba(232, 213, 240, 0.2);
+            border: 1px solid var(--medium-purple);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .legend-spot {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+
+        .quick-book-section {
+            background: rgba(40, 167, 69, 0.1);
+            border: 2px solid #28a745;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .btn-quick-book {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border: 2px solid #1e7e34;
+            color: white;
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-quick-book:hover {
+            background: linear-gradient(45deg, #218838, #1ea180);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                font-size: 0.9rem;
+            }
+            
+            .parking-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .main-content {
+                margin: 0 10px;
+                padding: 20px;
+            }
+
+            .parking-lots-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <div class="header-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="header-title">
+                        <i class="fas fa-car me-2"></i>User Dashboard
+                    </h1>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-end align-items-center">
+                        <div class="nav-links me-3">
+                            <span class="text-success fw-bold">Welcome {{ user_name }}!</span>
+                            <span class="separator">|</span>
+                            <a onclick="showSection('browse')">Browse Lots</a>
+                            <span class="separator">|</span>
+                            <a onclick="showSection('bookings')">My Bookings</a>
+                            <span class="separator">|</span>
+                            <a onclick="showSection('profile')">Profile</a>
+                            <span class="separator">|</span>
+                            <a href="/logout">
+                                <i class="fas fa-sign-out-alt me-1"></i>Logout
+                            </a>
+                        </div>
+                        <div class="profile-section">
+                            <i class="fas fa-user me-2"></i>
+                            <span class="fw-bold">{{ user_email }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <div class="main-content">
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <h3><i class="fas fa-parking me-2"></i>Welcome to the Parking System</h3>
+                <p class="mb-0">Find and book parking spots at various locations. Browse available lots below.</p>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-book-section">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="mb-2"><i class="fas fa-bolt me-2"></i>Quick Booking</h5>
+                        <p class="mb-0">Need a parking spot right now? Click to see all available spots across all locations.</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-quick-book" onclick="showAllAvailableSpots()">
+                            <i class="fas fa-search me-2"></i>Find Available Spots
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Title -->
+            <h2 class="section-title">Available Parking Lots</h2>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state">
+                <i class="fas fa-parking"></i>
+                <h4>No Parking Lots Available</h4>
+                <p>There are currently no parking lots configured in the system.</p>
+                <p class="text-muted">Please contact the administrator to add parking locations.</p>
+            </div>
+
+            <!-- Parking Lots Container -->
+            <div id="parkingLotsContainer" class="parking-lots-grid" style="display: none;">
+                <!-- Parking lots will be dynamically generated here -->
+            </div>
+
+            <!-- Legend -->
+            <div class="legend" id="legend" style="display: none;">
+                <h6 class="fw-bold mb-3">Legend:</h6>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="legend-item">
+                            <div class="legend-spot spot-available"></div>
+                            <span>Available Spot</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="legend-item">
+                            <div class="legend-spot spot-occupied"></div>
+                            <span>Occupied Spot</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="legend-item">
+                            <i class="fas fa-info-circle text-info me-2"></i>
+                            <span><strong>Click available spots to view details</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Store parking lots data
+        let parkingLots = [];
+
+        // Load parking lots from backend
+        async function loadParkingLots() {
+            try {
+                const response = await fetch('/api/lots');
+                if (response.ok) {
+                    parkingLots = await response.json();
+                } else {
+                    console.error('Failed to load parking lots');
+                    parkingLots = [];
+                }
+            } catch (e) {
+                console.warn('Failed to load parking lots:', e);
+                parkingLots = [];
+            }
+        }
+
+        // Initialize the application
+        async function initializeApp() {
+            await loadParkingLots();
+            updateDisplay();
+        }
+
+        // Update the display based on current state
+        function updateDisplay() {
+            const container = document.getElementById('parkingLotsContainer');
+            const emptyState = document.getElementById('emptyState');
+            const legend = document.getElementById('legend');
+            
+            if (parkingLots.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+                legend.style.display = 'none';
+            } else {
+                container.style.display = 'grid';
+                emptyState.style.display = 'none';
+                legend.style.display = 'block';
+                renderAllParkingLots();
+            }
+        }
+
+        // Render all parking lots
+        function renderAllParkingLots() {
+            const container = document.getElementById('parkingLotsContainer');
+            container.innerHTML = '';
+            
+            parkingLots.forEach(lot => {
+                addLotToDOM(lot);
+            });
+        }
+
+        // Add lot HTML to DOM
+        function addLotToDOM(lot) {
+            const container = document.getElementById('parkingLotsContainer');
+            const availableSpots = lot.totalSpots - lot.occupiedSpots;
+            const occupancyPercentage = Math.round((lot.occupiedSpots / lot.totalSpots) * 100);
+            
+            let statusText, statusClass;
+            if (availableSpots === 0) {
+                statusText = 'Full - No spots available';
+                statusClass = 'status-red';
+            } else if (availableSpots <= 2) {
+                statusText = 'Almost Full - Limited spots';
+                statusClass = 'status-orange';
+            } else {
+                statusText = 'Available - Spots open';
+                statusClass = 'status-green';
+            }
+            
+            const lotHtml = `
+                <div class="parking-lot">
+                    <div class="lot-header">
+                        <div>
+                            <div class="lot-title">${lot.name}</div>
+                            <div class="lot-info">
+                                <i class="fas fa-map-marker-alt me-1"></i>${lot.address}
+                                <br><i class="fas fa-tag me-1"></i>₹${lot.pricePerHour}/hour
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lot-status">
+                        <span class="${statusClass}">${statusText}</span><br>
+                        <span class="text-muted">Available: ${availableSpots}/${lot.totalSpots} spots (${100 - occupancyPercentage}% free)</span>
+                    </div>
+                    <div class="parking-grid" id="lot${lot.id}-grid">
+                        ${renderParkingSpots(lot)}
+                    </div>
+                    <div class="text-center mt-3">
+                        ${availableSpots > 0 ? 
+                            `<button class="btn btn-success" onclick="showBookingInfo(${lot.id})">
+                                <i class="fas fa-calendar-plus me-2"></i>Book Spot (${availableSpots} available)
+                            </button>` : 
+                            `<button class="btn btn-secondary" disabled>
+                                <i class="fas fa-times me-2"></i>No Spots Available
+                            </button>`
+                        }
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', lotHtml);
+        }
+
+        // Render parking spots for a lot
+        function renderParkingSpots(lot) {
+            let spotsHtml = '';
+            
+            lot.spots.forEach(spot => {
+                const spotClass = spot.occupied ? 'spot-occupied' : 'spot-available';
+                const spotText = spot.occupied ? 'O' : 'A';
+                const clickHandler = spot.occupied ? '' : `onclick="selectSpot(${lot.id}, ${spot.id})"`;
+                
+                spotsHtml += `
+                    <div class="parking-spot ${spotClass}" 
+                         ${clickHandler}
+                         title="${spot.occupied ? 'Occupied' : 'Available - Click to book'}">
+                        ${spotText}
+                    </div>
+                `;
+            });
+            
+            return spotsHtml;
+        }
+
+        // Show booking information
+        function showBookingInfo(lotId) {
+            const lot = parkingLots.find(l => l.id === lotId);
+            if (!lot) return;
+            
+            const availableSpots = lot.spots.filter(s => !s.occupied);
+            
+            if (availableSpots.length === 0) {
+                alert('Sorry, no spots are currently available at this location.');
+                return;
+            }
+            
+            const spotNumbers = availableSpots.map(s => s.id).join(', ');
+            
+            alert(`Booking Information for ${lot.name}:
+
+📍 Location: ${lot.address}
+💰 Price: ₹${lot.pricePerHour} per hour
+🅿️ Available Spots: ${availableSpots.length} (Spot IDs: ${spotNumbers})
+
+Click on any green spot in the grid to select and book it!`);
+        }
+
+        // Select a specific spot for booking
+        function selectSpot(lotId, spotId) {
+            const lot = parkingLots.find(l => l.id === lotId);
+            if (!lot) return;
+            
+            const spot = lot.spots.find(s => s.id === spotId);
+            if (!spot || spot.occupied) {
+                alert('This spot is not available for booking.');
+                return;
+            }
+            
+            const confirmation = confirm(`Book Parking Spot?
+
+📍 Location: ${lot.name}
+🅿️ Spot ID: ${spotId}
+💰 Rate: ₹${lot.pricePerHour} per hour
+📍 Address: ${lot.address}
+
+Note: This is a demo system. In a real implementation, you would:
+• Enter your vehicle details
+• Select duration
+• Make payment
+• Receive booking confirmation
+
+Proceed with demo booking?`);
+            
+            if (confirmation) {
+                // Demo booking - in real system, this would make API call
+                alert(`✅ Booking Confirmed!
+
+Spot ${spotId} at ${lot.name} has been reserved for you.
+Please proceed to the location and park in the designated spot.
+
+(This is a demo - no actual booking was made)`);
+            }
+        }
+
+        // Show all available spots across all lots
+        function showAllAvailableSpots() {
+            const allAvailableSpots = [];
+            
+            parkingLots.forEach(lot => {
+                const availableCount = lot.spots.filter(s => !s.occupied).length;
+                if (availableCount > 0) {
+                    allAvailableSpots.push({
+                        lotName: lot.name,
+                        address: lot.address,
+                        price: lot.pricePerHour,
+                        available: availableCount,
+                        total: lot.totalSpots
+                    });
+                }
+            });
+            
+            if (allAvailableSpots.length === 0) {
+                alert('😔 No Available Spots\n\nSorry, there are currently no available parking spots across all locations. Please check back later.');
+                return;
+            }
+            
+            let message = '🅿️ Available Parking Spots:\n\n';
+            allAvailableSpots.forEach((lot, index) => {
+                message += `${index + 1}. ${lot.lotName}\n`;
+                message += `   📍 ${lot.address}\n`;
+                message += `   💰 ₹${lot.price}/hour\n`;
+                message += `   🅿️ ${lot.available} spots available\n\n`;
+            });
+            
+            message += 'Click on any parking lot below to view and book specific spots!';
+            
+            alert(message);
+        }
+
+        // Navigation functions
+        function showSection(section) {
+            switch(section) {
+                case 'browse':
+                    // Already on browse page
+                    break;
+                case 'bookings':
+                    alert('My Bookings section would show your active and past bookings.\n\n(Not implemented in this demo)');
+                    break;
+                case 'profile':
+                    alert('Profile section would allow you to update your personal information.\n\n(Not implemented in this demo)');
+                    break;
+                default:
+                    alert(`${section} section not implemented in this demo`);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            
+            // Auto-refresh every 30 seconds to show updated parking availability
+            setInterval(async () => {
+                await loadParkingLots();
+                updateDisplay();
+            }, 30000);
+        });
+    </script>
+</body>
+</html>

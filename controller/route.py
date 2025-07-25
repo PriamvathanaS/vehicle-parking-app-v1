@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from controller.database import db
 from controller.model import Admin, User, ParkingLot, ParkingSpot, ReserveParkingSpot
 
@@ -34,6 +34,9 @@ def login():
             print(f"Found admin account for: {email}")  # Debug log
             if admin.check_password(password):
                 print("Admin password correct - redirecting to admin dashboard")  # Debug log
+                session['user_type'] = 'admin'
+                session['user_id'] = admin.id
+                session['user_email'] = admin.email
                 flash('Welcome Admin! Login successful!', 'success')
                 return redirect(url_for('main.admin_dashboard'))
             else:
@@ -45,6 +48,10 @@ def login():
             print(f"Found user account for: {email}")  # Debug log
             if user.check_password(password):
                 print("User password correct - redirecting to user dashboard")  # Debug log
+                session['user_type'] = 'user'
+                session['user_id'] = user.id
+                session['user_email'] = user.email
+                session['user_name'] = user.full_name
                 flash('Welcome! Login successful!', 'success')
                 return redirect(url_for('main.user_dashboard'))
             else:
@@ -66,6 +73,12 @@ def register():
     address = request.form['address']
     pincode = request.form['pincode']
     
+    # Check if user already exists
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        flash('Email already registered! Please login instead.', 'error')
+        return redirect(url_for('main.home'))
+    
     # Create new user
     new_user = User(
         email=email,
@@ -79,11 +92,13 @@ def register():
     db.session.add(new_user)
     db.session.commit()
     
-    flash('Registration successful!', 'success')
+    flash('Registration successful! Please login with your credentials.', 'success')
     return redirect(url_for('main.home'))
+
 @bp.route('/logout')
 def logout():
     """Handle logout"""
+    session.clear()
     flash('You have been logged out successfully!', 'info')
     return redirect(url_for('main.home'))
 
@@ -94,8 +109,27 @@ def logout():
 @bp.route('/admin-dashboard')
 def admin_dashboard():
     """Admin dashboard page"""
+    # Check if user is logged in as admin
+    if session.get('user_type') != 'admin':
+        flash('Please login as admin to access this page.', 'error')
+        return redirect(url_for('main.home'))
+    
     print("Admin dashboard accessed successfully")  # Debug log
     return render_template('admin-dashboard.html')
+
+@bp.route('/user-dashboard')
+def user_dashboard():
+    """User dashboard page"""
+    # Check if user is logged in as user
+    if session.get('user_type') != 'user':
+        flash('Please login as user to access this page.', 'error')
+        return redirect(url_for('main.home'))
+    
+    # Get user information from session
+    user_name = session.get('user_name', 'User')
+    user_email = session.get('user_email', '')
+    
+    return render_template('user.html', user_name=user_name, user_email=user_email)
 
 @bp.route('/test-admin')
 def test_admin():
@@ -122,16 +156,6 @@ def test_admin():
         <p>Admin account was not created properly.</p>
         <p><a href="/">← Back to Login Page</a></p>
         """
-
-@bp.route('/user-dashboard')
-def user_dashboard():
-    """User dashboard page"""
-    # You can create a user dashboard template later
-    return """
-    <h1>User Dashboard - Coming Soon!</h1>
-    <p>This page will contain user-specific parking features.</p>
-    <a href="/" style="color: blue;">← Back to Login</a>
-    """
 
 # ================================
 # API ROUTES FOR PARKING MANAGEMENT
@@ -414,6 +438,7 @@ def get_dashboard_stats():
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 @bp.route('/check-users')
 def check_users():
     """Simple route to check saved users"""
