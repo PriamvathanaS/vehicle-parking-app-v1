@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Vehicle Parking System</title>
+ <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%23B855C7' d='M135.2 117.4L109.1 192H402.9l-26.1-74.6C372.3 104.6 360.2 96 346.6 96H165.4c-13.6 0-25.7 8.6-30.2 21.4zM39.6 196.8L74.8 96.3C88.3 57.8 124.6 32 165.4 32H346.6c40.8 0 77.1 25.8 90.6 64.3l35.2 100.5c23.2 9.6 39.6 32.5 39.6 59.2V304c0 17.7-14.3 32-32 32H448c0 53-43 96-96 96s-96-43-96-96H256c0 53-43 96-96 96s-96-43-96-96H32c-17.7 0-32-14.3-32-32V256c0-26.7 16.4-49.6 39.6-59.2zM128 288a32 32 0 1 1 0 64 32 32 0 1 1 0-64zm288 32a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z'/></svg>" type="image/svg+xml">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -31,12 +33,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('your-image-path-here.jpg'); /* Replace with your image path */
+            background-image: url('static/shutterstock_540175210-BW.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            opacity: 0.2; /* Adjust transparency */
-            z-index: -1;
+            opacity: 1; /* Adjust transparency */
+            z-index: -2;
             pointer-events: none;
         }
 
@@ -45,13 +47,15 @@
             content: '';
             position: fixed;
             top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 520px; /* Slightly wider than form to create clean edges */
+            left: 0;
+            width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, var(--light-purple) 0%, var(--accent-purple) 50%, var(--primary-purple) 100%);
-            z-index: 0;
-            pointer-events: none;
+            background: linear-gradient(135deg, 
+        rgba(245, 240, 255, 0.7) 0%, 
+        rgba(240, 230, 255, 0.7) 50%, 
+        rgba(232, 213, 240, 0.7) 100%);
+    z-index: -1;
+    pointer-events: none;
         }
 
         .main-container {
@@ -70,7 +74,7 @@
             box-shadow: 0 20px 40px rgba(212, 196, 227, 0.4);
             backdrop-filter: blur(10px);
             overflow: hidden;
-            max-width: 500px;
+            max-width: 650px; /* Increased width for two columns */
             width: 100%;
             position: relative;
             z-index: 2;
@@ -85,14 +89,14 @@
             background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
             color: #444;
             text-align: center;
-            padding: 30px 20px;
+            padding: 20px 20px;
             position: relative;
         }
 
-        .header-section h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 10px;
+        .header-section h2 {
+            font-size: 2rem;
+            font-weight: 500;
+            margin-bottom: 8px;
         }
 
         .parking-icon {
@@ -123,7 +127,7 @@
         }
 
         .form-label {
-            color: var(--text-dark);
+            color: black;
             font-weight: 500;
             margin-bottom: 8px;
             font-size: 0.95rem;
@@ -131,7 +135,7 @@
         }
 
         .form-control {
-            border: 2px solid var(--light-purple);
+            border: 2px solid var(--dark-purple);
             border-radius: 10px;
             padding: 12px 15px;
             font-size: 1rem;
@@ -168,7 +172,7 @@
         }
 
         .toggle-link {
-            color: var(--medium-purple);
+            color: black;
             text-decoration: none;
             font-weight: 500;
             text-align: center;
@@ -280,9 +284,60 @@
             font-size: 0.8rem;
         }
 
+        /* Two Column Form Styles */
+        .two-column-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .form-column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-column:first-child {
+            border-right: 1px solid var(--light-purple);
+            padding-right: 15px;
+        }
+
+        .form-column:last-child {
+            padding-left: 15px;
+        }
+
+        .text-center .btn-register {
+            max-width: 300px;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .two-column-form {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .form-column:first-child {
+                border-right: none;
+                padding-right: 0;
+            }
+
+            .form-column:last-child {
+                padding-left: 0;
+            }
+            
+            .auth-wrapper {
+                max-width: 500px;
+            }
+            
+            body::after {
+                width: 520px;
+            }
         }
 
         @media (max-width: 576px) {
@@ -290,7 +345,7 @@
                 padding: 30px 25px;
             }
             
-            .header-section h1 {
+            .header-section h2 {
                 font-size: 1.8rem;
             }
             
@@ -331,7 +386,7 @@
             <!-- Header Section -->
             <div class="header-section">
                 <i class="fas fa-car parking-icon"></i>
-                <h1>Vehicle Parking System</h1>
+                <h2>Vehicle Parking System</h2>
             </div>
 
             <!-- Form Container -->
@@ -339,23 +394,21 @@
                 
                 <!-- Login Form -->
                 <div id="loginForm">
-                    <h2 class="form-title">User Login</h2>
+                   
                     <form method="POST" action="/login">
                         
                         <div class="mb-3">
                             <label for="email" class="form-label">
                                 <i class="fas fa-envelope me-2"></i>Registered Email ID:
                             </label>
-                            <input type="email" class="form-control" id="email" name="email" required 
-                                   placeholder="Enter your email address">
+                            <input type="email" class="form-control" id="email" name="email" required>
                         </div>
 
                         <div class="mb-3">
                             <label for="password" class="form-label">
                                 <i class="fas fa-lock me-2"></i>Password:
                             </label>
-                            <input type="password" class="form-control" id="password" name="password" required
-                                   placeholder="Enter your password">
+                            <input type="password" class="form-control" id="password" name="password" required>
                         </div>
 
                         <button type="submit" class="btn btn-primary">
@@ -366,60 +419,65 @@
                     <a href="#" class="toggle-link" onclick="toggleForm()">
                         <i class="fas fa-user-plus me-1"></i>Don't have an account? Create one!
                     </a>
-
-                  
                 </div>
 
                 <!-- Signup Form -->
                 <div id="signupForm" class="d-none">
-                    <h2 class="form-title">User Registration</h2>
+                    
                     <form method="POST" action="/register">
+                        
+                        <div class="two-column-form">
+                            <!-- Left Column -->
+                            <div class="form-column">
+                                <div class="mb-3">
+                                    <label for="signup_email" class="form-label">
+                                        <i class="fas fa-envelope me-2"></i>Email ID (Username):
+                                    </label>
+                                    <input type="email" class="form-control" id="signup_email" name="email" required>
+                                </div>
 
-                        <div class="mb-3">
-                            <label for="signup_email" class="form-label">
-                                <i class="fas fa-envelope me-2"></i>Email ID (Username):
-                            </label>
-                            <input type="email" class="form-control" id="signup_email" name="email" required
-                                   placeholder="Enter your email address">
+                                <div class="mb-3">
+                                    <label for="signup_password" class="form-label">
+                                        <i class="fas fa-lock me-2"></i>Password:
+                                    </label>
+                                    <input type="password" class="form-control" id="signup_password" name="password" 
+                                           minlength="6" required>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="form-column">
+                                <div class="mb-3">
+                                    <label for="fullname" class="form-label">
+                                        <i class="fas fa-user me-2"></i>Full Name:
+                                    </label>
+                                    <input type="text" class="form-control" id="fullname" name="fullname" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="pincode" class="form-label">
+                                        <i class="fas fa-map-pin me-2"></i>Pin Code:
+                                    </label>
+                                    <input type="text" class="form-control" id="pincode" name="pincode" 
+                                           pattern="[0-9]{6}" maxlength="6" required>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="signup_password" class="form-label">
-                                <i class="fas fa-lock me-2"></i>Password:
-                            </label>
-                            <input type="password" class="form-control" id="signup_password" name="password" 
-                                   minlength="6" required placeholder="Create a strong password (min 6 characters)">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="fullname" class="form-label">
-                                <i class="fas fa-user me-2"></i>Full Name:
-                            </label>
-                            <input type="text" class="form-control" id="fullname" name="fullname" required
-                                   placeholder="Enter your full name">
-                        </div>
-
+                        <!-- Address field spanning full width -->
                         <div class="mb-3">
                             <label for="address" class="form-label">
                                 <i class="fas fa-map-marker-alt me-2"></i>Address:
                             </label>
-                            <textarea class="form-control" id="address" name="address" rows="2" required
-                                      placeholder="Enter your complete address"></textarea>
+                            <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="pincode" class="form-label">
-                                <i class="fas fa-map-pin me-2"></i>Pin Code:
-                            </label>
-                            <input type="text" class="form-control" id="pincode" name="pincode" 
-                                   pattern="[0-9]{6}" maxlength="6" required
-                                   placeholder="Enter 6-digit pin code">
-                            <small class="form-text text-muted">Enter exactly 6 digits</small>
+                        <!-- Button Container -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-register">
+                                <i class="fas fa-user-plus me-2"></i>Register
+                            </button>
                         </div>
-
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-user-plus me-2"></i>Register
-                        </button>
                     </form>
 
                     <a href="#" class="toggle-link" onclick="toggleForm()">

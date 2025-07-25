@@ -22,19 +22,20 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        .header-section {
-            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
-            color: #444;
-            padding: 20px 0;
-            box-shadow: 0 2px 10px rgba(212, 196, 227, 0.3);
-            margin-bottom: 30px;
-        }
+      .header-section {
+    background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+    color: #444;
+    padding: 10px 0; /* Changed from 20px 0 */
+    box-shadow: 0 2px 10px rgba(212, 196, 227, 0.3);
+    margin-bottom: 30px;
+}
 
         .header-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin: 0;
-        }
+    font-size: 1.4rem; /* Changed from 1.8rem */
+    font-weight: 500;
+    margin: 0;
+}
+
 
         .nav-links {
             display: flex;
@@ -43,34 +44,52 @@
             flex-wrap: wrap;
         }
 
-        .nav-links a {
-            color: #555;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
+       .nav-links a {
+    color:black;
+    text-decoration: none;
+    padding: 5px 10px; /* Changed from 8px 15px */
+    border-radius: 6px; /* Changed from 8px */
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.9rem; /* Added smaller font size */
+}
         .nav-links a:hover {
             background: rgba(255, 255, 255, 0.3);
             color: #333;
+        }
+
+        .nav-links a.active {
+            background: rgba(255, 255, 255, 0.4);
+            color: #222;
+            font-weight: 600;
         }
 
         .nav-links .separator {
             color: #666;
             margin: 0 5px;
         }
-
-        .profile-section {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 10px 20px;
-            border-radius: 25px;
-            border: 2px solid var(--light-purple);
-            color: var(--text-dark);
-            font-weight: 500;
-        }
-
+.nav-links a.logout-icon {
+    color: black;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+.nav-links a.logout-icon:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #333;
+}
+      .profile-section {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 5px 15px; /* Changed from 10px 20px */
+    border-radius: 20px; /* Changed from 25px */
+    border: 2px solid var(--light-purple);
+    color: var(--text-dark);
+    font-weight: 500;
+    font-size: 0.9rem; /* Added smaller font size */
+}
         .main-content {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
@@ -98,6 +117,15 @@
             height: 3px;
             background: var(--medium-purple);
             border-radius: 2px;
+        }
+
+        .tab-content-section {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .parking-lot {
@@ -410,41 +438,44 @@
 </head>
 <body>
     <!-- Header Section -->
-    <div class="header-section">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <h1 class="header-title">
-                        <i class="fas fa-car me-2"></i>Admin Dashboard
-                    </h1>
+<div class="header-section">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+            <!-- Left: Title -->
+            <div class="col-auto">
+                <h1 class="header-title">
+                    <i class="fas fa-car me-2"></i>Welcome Admin!
+                </h1>
+            </div>
+            
+            <!-- Center: Navigation -->
+            <div class="col-auto">
+                <div class="nav-links">
+                    <a href="#" onclick="showSection('home')" id="nav-home" class="active">Home</a>
+                    <span class="separator">|</span>
+                    <a href="#" onclick="showSection('users')" id="nav-users">Users</a>
+                    <span class="separator">|</span>
+                    <a href="#" onclick="showSection('search')" id="nav-search">Search</a>
+                    <span class="separator">|</span>
+                    <a href="#" onclick="showSection('summary')" id="nav-summary">Summary</a>
                 </div>
-                <div class="col-md-6">
-                    <div class="d-flex justify-content-end align-items-center">
-                        <div class="nav-links me-3">
-                            <span class="text-success fw-bold">Welcome to Admin</span>
-                            <span class="separator">|</span>
-                            <a href="#" onclick="showSection('home')">Home</a>
-                            <span class="separator">|</span>
-                            <a href="#" onclick="showSection('users')">Users</a>
-                            <span class="separator">|</span>
-                            <a href="#" onclick="showSection('search')">Search</a>
-                            <span class="separator">|</span>
-                            <a href="#" onclick="showSection('summary')">Summary</a>
-                            <span class="separator">|</span>
-                            <a href="#" onclick="logout()">
-                                <i class="fas fa-sign-out-alt me-1"></i>Logout
-                            </a>
-                        </div>
-                        <div class="profile-section">
-                            <i class="fas fa-user-edit me-2"></i>
-                            <span class="fw-bold">Edit Profile</span>
-                            <small class="text-muted ms-2">View/Edit Profile details</small>
-                        </div>
+            </div>
+            
+            <!-- Right: Profile Icons and Logout -->
+            <div class="col-auto">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="profile-section">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    
+                    <div class="profile-section" onclick="logout()" style="cursor: pointer;">
+                        <i class="fas fa-sign-out-alt"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Confirmation Modal -->
     <div id="confirmationModal" class="confirmation-modal">
@@ -511,100 +542,138 @@
     <!-- Main Content -->
     <div class="container-fluid">
         <div class="main-content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="section-title">Parking Lots Management</h2>
-                <button class="btn btn-add-lot" onclick="toggleAddLotForm()">
-                    <i class="fas fa-plus me-2"></i>Add New Lot
-                </button>
-            </div>
-
-            <!-- Add New Lot Form -->
-            <div id="addLotForm" class="add-lot-form">
-                <h5 class="mb-3">Add New Parking Lot</h5>
-                <div class="row">
-                    <div class="col-md-4">
-                        <label class="form-label">Location Name:</label>
-                        <input type="text" class="form-control" id="lotName" placeholder="Location">
+            <!-- Tab Content Container -->
+            <div id="tab-content">
+                <!-- Home Tab Content -->
+                <div id="home-content" class="tab-content-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="section-title">Parking Lots Management</h2>
+                        <button class="btn btn-add-lot" onclick="toggleAddLotForm()">
+                            <i class="fas fa-plus me-2"></i>Add New Lot
+                        </button>
                     </div>
-                    <div class="col-md-4">
-            <label class="form-label">Address:</label>
-            <input type="text" class="form-control" id="address" placeholder="123 Main Street">
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Pin Code:</label>
-            <input type="text" class="form-control" id="pinCode" placeholder="400010">
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Price/Hour (₹):</label>
-            <input type="number" class="form-control" id="pricePerHour" value="20" min="0">
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Maximum Spots:</label>
-            <input type="number" class="form-control" id="lotSpots" value="10" min="5" max="50">
-        </div>
-        <div class="col-md-4 d-flex align-items-end">
-            <button class="btn btn-success me-2" onclick="addNewLot()">
-                <i class="fas fa-check me-1"></i>Add
-            </button>
-            <button class="btn btn-secondary" onclick="toggleAddLotForm()">
-                <i class="fas fa-times me-1"></i>Cancel
-            </button>
-        </div>
-    </div>
-</div>
 
-
-            <!-- Empty State -->
-            <div id="emptyState" class="empty-state">
-                <i class="fas fa-parking"></i>
-                <h4>No Parking Lots Created Yet</h4>
-                <p>Get started by adding your first parking lot using the "Add New Lot" button above.</p>
-                <p class="text-muted">All parking lots you create will be saved and persist across sessions.</p>
-            </div>
-
-            <!-- Parking Lots Container - Updated with Grid Layout -->
-            <div id="parkingLotsContainer" class="parking-lots-grid" style="display: none;">
-                <!-- Parking lots will be dynamically generated here -->
-            </div>
-
-            <!-- Legend -->
-            <div class="legend" id="legend" style="display: none;">
-                <h6 class="fw-bold mb-3">Legend:</h6>
-                <div class="row">
-                    <div class="col-md-2">
-                        <div class="legend-item">
-                            <div class="legend-spot spot-available"></div>
-                            <span>Available Spot</span>
+                    <!-- Add New Lot Form -->
+                    <div id="addLotForm" class="add-lot-form">
+                        <h5 class="mb-3">Add New Parking Lot</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="form-label">Location Name:</label>
+                                <input type="text" class="form-control" id="lotName" placeholder="Location">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Address:</label>
+                                <input type="text" class="form-control" id="address" placeholder="123 Main Street">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Pin Code:</label>
+                                <input type="text" class="form-control" id="pinCode" placeholder="400010">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Price/Hour (₹):</label>
+                                <input type="number" class="form-control" id="pricePerHour" value="20" min="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Maximum Spots:</label>
+                                <input type="number" class="form-control" id="lotSpots" value="10" min="5" max="50">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button class="btn btn-success me-2" onclick="addNewLot()">
+                                    <i class="fas fa-check me-1"></i>Add
+                                </button>
+                                <button class="btn btn-secondary" onclick="toggleAddLotForm()">
+                                    <i class="fas fa-times me-1"></i>Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <div class="legend-item">
-                            <div class="legend-spot spot-occupied"></div>
-                            <span>Occupied Spot</span>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="empty-state">
+                        <i class="fas fa-parking"></i>
+                        <h4>No Parking Lots Created Yet</h4>
+                        <p>Get started by adding your first parking lot using the "Add New Lot" button above.</p>
+                        <p class="text-muted">All parking lots you create will be saved and persist across sessions.</p>
+                    </div>
+
+                    <!-- Parking Lots Container - Updated with Grid Layout -->
+                    <div id="parkingLotsContainer" class="parking-lots-grid" style="display: none;">
+                        <!-- Parking lots will be dynamically generated here -->
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="legend" id="legend" style="display: none;">
+                        <h6 class="fw-bold mb-3">Legend:</h6>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="legend-item">
+                                    <div class="legend-spot spot-available"></div>
+                                    <span>Available Spot</span>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="legend-item">
+                                    <div class="legend-spot spot-occupied"></div>
+                                    <span>Occupied Spot</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="legend-item">
+                                    <i class="fas fa-info-circle text-info me-2"></i>
+                                    <span><strong>Click spots to toggle occupancy</strong></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="legend-item">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                    <span><strong>Can only delete empty lots</strong></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="legend-item">
-                            <i class="fas fa-info-circle text-info me-2"></i>
-                            <span><strong>Click spots to toggle occupancy</strong></span>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="legend-item">
-                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                            <span><strong>Can only delete empty lots</strong></span>
-                        </div>
+
+                    <!-- Clear All Data Section -->
+                    <div class="clear-data-section" id="clearDataSection" style="display: none;">
+                        <h6><i class="fas fa-exclamation-triangle text-warning me-2"></i>Admin Actions</h6>
+                        <p class="mb-2">Clear all parking lot data (useful for testing or reset)</p>
+                        <button class="btn-clear-data" onclick="clearAllData()">
+                            <i class="fas fa-trash-alt me-1"></i>Clear All Data
+                        </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Clear All Data Section -->
-            <div class="clear-data-section" id="clearDataSection" style="display: none;">
-                <h6><i class="fas fa-exclamation-triangle text-warning me-2"></i>Admin Actions</h6>
-                <p class="mb-2">Clear all parking lot data (useful for testing or reset)</p>
-                <button class="btn-clear-data" onclick="clearAllData()">
-                    <i class="fas fa-trash-alt me-1"></i>Clear All Data
-                </button>
+                <!-- Users Tab Content -->
+                <div id="users-content" class="tab-content-section" style="display: none;">
+                    <h2 class="section-title">Users Management</h2>
+                    <div class="text-center mt-5">
+                        <i class="fas fa-users" style="font-size: 4rem; color: var(--medium-purple); margin-bottom: 20px;"></i>
+                        <h4 class="text-muted">Users Management Module</h4>
+                        <p class="text-muted">Manage user accounts, permissions, and access controls.</p>
+                        <p class="text-muted">This functionality is coming soon...</p>
+                    </div>
+                </div>
+
+                <!-- Search Tab Content -->
+                <div id="search-content" class="tab-content-section" style="display: none;">
+                    <h2 class="section-title">Search & Reports</h2>
+                    <div class="text-center mt-5">
+                        <i class="fas fa-search" style="font-size: 4rem; color: var(--medium-purple); margin-bottom: 20px;"></i>
+                        <h4 class="text-muted">Search & Reporting Module</h4>
+                        <p class="text-muted">Search through parking data and generate detailed reports.</p>
+                        <p class="text-muted">This functionality is coming soon...</p>
+                    </div>
+                </div>
+
+                <!-- Summary Tab Content -->
+                <div id="summary-content" class="tab-content-section" style="display: none;">
+                    <h2 class="section-title">Summary & Analytics</h2>
+                    <div class="text-center mt-5">
+                        <i class="fas fa-chart-bar" style="font-size: 4rem; color: var(--medium-purple); margin-bottom: 20px;"></i>
+                        <h4 class="text-muted">Analytics Dashboard</h4>
+                        <p class="text-muted">View comprehensive analytics and performance metrics.</p>
+                        <p class="text-muted">This functionality is coming soon...</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -637,6 +706,36 @@
         async function initializeApp() {
             await loadParkingLots();
             updateDisplay();
+        }
+
+        // Navigation functions
+        function showSection(section) {
+            // Hide all tab contents
+            const allTabs = document.querySelectorAll('.tab-content-section');
+            allTabs.forEach(tab => tab.style.display = 'none');
+            
+            // Remove active class from all nav links
+            const allNavLinks = document.querySelectorAll('.nav-links a');
+            allNavLinks.forEach(link => link.classList.remove('active'));
+            
+            // Show selected tab content
+            const targetContent = document.getElementById(section + '-content');
+            if (targetContent) {
+                targetContent.style.display = 'block';
+            }
+            
+            // Add active class to selected nav link
+            const targetNav = document.getElementById('nav-' + section);
+            if (targetNav) {
+                targetNav.classList.add('active');
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                alert('Logged out successfully!');
+                // In a real app: window.location.href = '/login';
+            }
         }
 
         // Update the display based on current state
@@ -849,6 +948,7 @@
         }
 
         // Add new parking lot (API call)
+        async function addNewLot() {
             const nameInput = document.getElementById('lotName');
             const spotsInput = document.getElementById('lotSpots');
             const addressInput = document.getElementById('address');
@@ -896,7 +996,7 @@
             } else {
                 alert('Failed to create parking lot.');
             }
-        
+        }
 
         // Clear all parking lot data (API call)
         async function clearAllData() {
@@ -913,22 +1013,6 @@
                 } else {
                     alert('Failed to clear parking lot data.');
                 }
-            }
-        }
-
-        // Navigation functions
-        function showSection(section) {
-            if (section === 'home') {
-                // Do nothing, already on home page
-                return;
-            }
-            alert(`Navigating to ${section} section (not implemented in this demo)`);
-        }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                alert('Logged out successfully!');
-                // In a real app: window.location.href = '/login';
             }
         }
 
