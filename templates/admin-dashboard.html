@@ -477,67 +477,7 @@
     </div>
 </div>
 
-    <!-- Confirmation Modal -->
-    <div id="confirmationModal" class="confirmation-modal">
-        <div class="modal-content">
-            <h5 id="modalTitle">Confirm Deletion</h5>
-            <p id="modalMessage">Are you sure you want to delete this parking lot?</p>
-            <div class="modal-buttons">
-                <button class="btn btn-danger" onclick="confirmDelete()">
-                    <i class="fas fa-trash me-1"></i>Delete
-                </button>
-                <button class="btn btn-secondary" onclick="closeModal()">
-                    <i class="fas fa-times me-1"></i>Cancel
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Edit Lot Modal -->
-    <div id="editLotModal" class="confirmation-modal">
-        <div class="modal-content">
-            <h5>Edit Parking Lot</h5>
-            <form id="editLotFormFields">
-                <div class="mb-3">
-                    <label class="form-label">Lot Name:</label>
-                    <input type="text" class="form-control" id="editLotName" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Address:</label>
-                    <input type="text" class="form-control" id="editLotAddress" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Pin Code:</label>
-                    <input type="text" class="form-control" id="editLotPinCode" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Price/Hour (₹):</label>
-                    <input type="number" class="form-control" id="editLotPrice" min="0" required>
-                </div>
-                <div class="modal-buttons">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check me-1"></i>Save
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeEditLotModal()">
-                        <i class="fas fa-times me-1"></i>Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Occupied Spot Details Modal (for delete action) -->
-    <div id="occupiedSpotDetailsModal" class="confirmation-modal">
-        <div class="modal-content" style="max-width: 420px;">
-            <h5>Occupied Parking Spot Details</h5>
-            <div id="occupiedSpotDetailsContent" class="text-start mb-3"></div>
-            <div class="modal-buttons">
-                <button type="button" class="btn btn-secondary" onclick="closeOccupiedSpotDetailsModal()">
-                    <i class="fas fa-times me-1"></i>Close
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- Main Content -->
     <div class="container-fluid">
@@ -545,113 +485,42 @@
             <!-- Tab Content Container -->
             <div id="tab-content">
                 <!-- Home Tab Content -->
-                <div id="home-content" class="tab-content-section">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2 class="section-title">Parking Lots Management</h2>
-                        <button class="btn btn-add-lot" onclick="toggleAddLotForm()">
-                            <i class="fas fa-plus me-2"></i>Add New Lot
-                        </button>
-                    </div>
+<div id="home-content" class="tab-content-section">
+    <div id="parking-iframe-container" style="width: 100%; height: 80vh;">
+        <iframe id="parking-iframe" 
+                src="" 
+                style="width: 100%; height: 100%; border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"
+                onload="handleParkingIframeLoad()">
+        </iframe>
+    </div>
+    
+    <!-- Loading state for parking -->
+    <div id="parking-loading" class="text-center" style="padding: 50px;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading Parking Management...</p>
+    </div>
+</div>
 
-                    <!-- Add New Lot Form -->
-                    <div id="addLotForm" class="add-lot-form">
-                        <h5 class="mb-3">Add New Parking Lot</h5>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label class="form-label">Location Name:</label>
-                                <input type="text" class="form-control" id="lotName" placeholder="Location">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Address:</label>
-                                <input type="text" class="form-control" id="address" placeholder="123 Main Street">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Pin Code:</label>
-                                <input type="text" class="form-control" id="pinCode" placeholder="400010">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Price/Hour (₹):</label>
-                                <input type="number" class="form-control" id="pricePerHour" value="20" min="0">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Maximum Spots:</label>
-                                <input type="number" class="form-control" id="lotSpots" value="10" min="5" max="50">
-                            </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <button class="btn btn-success me-2" onclick="addNewLot()">
-                                    <i class="fas fa-check me-1"></i>Add
-                                </button>
-                                <button class="btn btn-secondary" onclick="toggleAddLotForm()">
-                                    <i class="fas fa-times me-1"></i>Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Empty State -->
-                    <div id="emptyState" class="empty-state">
-                        <i class="fas fa-parking"></i>
-                        <h4>No Parking Lots Created Yet</h4>
-                        <p>Get started by adding your first parking lot using the "Add New Lot" button above.</p>
-                        <p class="text-muted">All parking lots you create will be saved and persist across sessions.</p>
-                    </div>
-
-                    <!-- Parking Lots Container - Updated with Grid Layout -->
-                    <div id="parkingLotsContainer" class="parking-lots-grid" style="display: none;">
-                        <!-- Parking lots will be dynamically generated here -->
-                    </div>
-
-                    <!-- Legend -->
-                    <div class="legend" id="legend" style="display: none;">
-                        <h6 class="fw-bold mb-3">Legend:</h6>
-                        <div class="row">
-                            <div class="col-md-2">
-                                <div class="legend-item">
-                                    <div class="legend-spot spot-available"></div>
-                                    <span>Available Spot</span>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="legend-item">
-                                    <div class="legend-spot spot-occupied"></div>
-                                    <span>Occupied Spot</span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="legend-item">
-                                    <i class="fas fa-info-circle text-info me-2"></i>
-                                    <span><strong>Click spots to toggle occupancy</strong></span>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="legend-item">
-                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                                    <span><strong>Can only delete empty lots</strong></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Clear All Data Section -->
-                    <div class="clear-data-section" id="clearDataSection" style="display: none;">
-                        <h6><i class="fas fa-exclamation-triangle text-warning me-2"></i>Admin Actions</h6>
-                        <p class="mb-2">Clear all parking lot data (useful for testing or reset)</p>
-                        <button class="btn-clear-data" onclick="clearAllData()">
-                            <i class="fas fa-trash-alt me-1"></i>Clear All Data
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Users Tab Content -->
-                <div id="users-content" class="tab-content-section" style="display: none;">
-                    <h2 class="section-title">Users Management</h2>
-                    <div class="text-center mt-5">
-                        <i class="fas fa-users" style="font-size: 4rem; color: var(--medium-purple); margin-bottom: 20px;"></i>
-                        <h4 class="text-muted">Users Management Module</h4>
-                        <p class="text-muted">Manage user accounts, permissions, and access controls.</p>
-                        <p class="text-muted">This functionality is coming soon...</p>
-                    </div>
-                </div>
+<!-- Users Tab Content -->
+<div id="users-content" class="tab-content-section" style="display: none;">
+    <div id="users-iframe-container" style="width: 100%; height: 80vh;">
+        <iframe id="users-iframe" 
+                src="" 
+                style="width: 100%; height: 100%; border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"
+                onload="handleUsersIframeLoad()">
+        </iframe>
+    </div>
+    
+    <!-- Loading state for users -->
+    <div id="users-loading" class="text-center" style="padding: 50px;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading Users Management...</p>
+    </div>
+</div>
 
                 <!-- Search Tab Content -->
                 <div id="search-content" class="tab-content-section" style="display: none;">
@@ -681,428 +550,152 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Use backend API instead of sessionStorage
-        let parkingLots = [];
-        let lotToDelete = null;
-        let lotToEdit = null;
+               
 
-        // Load parking lots from backend
-        async function loadParkingLots() {
-            try {
-                const response = await fetch('/api/lots');
-                parkingLots = await response.json();
-            } catch (e) {
-                console.warn('Failed to load parking lots:', e);
-                parkingLots = [];
-            }
-        }
 
-        // Save parking lots: handled by backend, so only update after API calls
-        function saveParkingLots() {
-            // No-op: handled by backend
-        }
+ // Navigation functions
+// Navigation functions
+function showSection(section) {
+    // Hide all tab contents
+    const allTabs = document.querySelectorAll('.tab-content-section');
+    allTabs.forEach(tab => tab.style.display = 'none');
+    
+    // Remove active class from all nav links
+    const allNavLinks = document.querySelectorAll('.nav-links a');
+    allNavLinks.forEach(link => link.classList.remove('active'));
+    
+    // Show selected tab content
+    const targetContent = document.getElementById(section + '-content');
+    if (targetContent) {
+        targetContent.style.display = 'block';
+        
+       // Special handling for different sections
+if (section === 'home') {
+    loadHomePage();
+} else if (section === 'users') {
+    loadUsersPage();
+}
+    }
+    
+    // Add active class to selected nav link
+    const targetNav = document.getElementById('nav-' + section);
+    if (targetNav) {
+        targetNav.classList.add('active');
+    }
+}
 
-        // Initialize the application
-        async function initializeApp() {
-            await loadParkingLots();
-            updateDisplay();
-        }
+// Load users page
+function loadUsersPage() {
+    const iframe = document.getElementById('users-iframe');
+    const loadingDiv = document.getElementById('users-loading');
+    const iframeContainer = document.getElementById('users-iframe-container');
+    
+    // Show loading state
+    loadingDiv.style.display = 'block';
+    iframeContainer.style.display = 'none';
+    
+    // Load the admin users route in iframe
+    iframe.src = '/admin/users';
+}
 
-        // Navigation functions
-        function showSection(section) {
-            // Hide all tab contents
-            const allTabs = document.querySelectorAll('.tab-content-section');
-            allTabs.forEach(tab => tab.style.display = 'none');
+// Handle iframe load completion
+function handleUsersIframeLoad() {
+    const loadingDiv = document.getElementById('users-loading');
+    const iframeContainer = document.getElementById('users-iframe-container');
+    
+    // Hide loading and show iframe
+    loadingDiv.style.display = 'none';
+    iframeContainer.style.display = 'block';
+}
+// Load users content dynamically
+// Load parking page
+function loadHomePage() {
+    const iframe = document.getElementById('parking-iframe');
+    const loadingDiv = document.getElementById('parking-loading');
+    const iframeContainer = document.getElementById('parking-iframe-container');
+    
+    // Show loading state
+    loadingDiv.style.display = 'block';
+    iframeContainer.style.display = 'none';
+    
+    // Load the admin parking route in iframe
+    iframe.src = '/admin/home';
+}
+
+// Handle iframe load completion for parking
+function handleParkingIframeLoad() {
+    const loadingDiv = document.getElementById('parking-loading');
+    const iframeContainer = document.getElementById('parking-iframe-container');
+    
+    // Hide loading and show iframe
+    loadingDiv.style.display = 'none';
+    iframeContainer.style.display = 'block';
+}
+async function loadUsersContent() {
+    const loadingDiv = document.getElementById('users-loading');
+    const contentDiv = document.getElementById('users-dynamic-content');
+    
+    // Show loading state
+    loadingDiv.style.display = 'block';
+    contentDiv.style.display = 'none';
+    
+    try {
+        // Fetch the user.html content
+        const response = await fetch('/admin-user.html');
+        if (response.ok) {
+            const htmlContent = await response.text();
             
-            // Remove active class from all nav links
-            const allNavLinks = document.querySelectorAll('.nav-links a');
-            allNavLinks.forEach(link => link.classList.remove('active'));
+            // Extract the body content from user.html
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, 'text/html');
+            const bodyContent = doc.body.innerHTML;
             
-            // Show selected tab content
-            const targetContent = document.getElementById(section + '-content');
-            if (targetContent) {
-                targetContent.style.display = 'block';
-            }
+            // Insert the content
+            contentDiv.innerHTML = bodyContent;
             
-            // Add active class to selected nav link
-            const targetNav = document.getElementById('nav-' + section);
-            if (targetNav) {
-                targetNav.classList.add('active');
-            }
-        }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                alert('Logged out successfully!');
-                // In a real app: window.location.href = '/login';
-            }
-        }
-
-        // Update the display based on current state
-        function updateDisplay() {
-            const container = document.getElementById('parkingLotsContainer');
-            const emptyState = document.getElementById('emptyState');
-            const legend = document.getElementById('legend');
-            const clearDataSection = document.getElementById('clearDataSection');
-            
-            if (parkingLots.length === 0) {
-                container.style.display = 'none';
-                emptyState.style.display = 'block';
-                legend.style.display = 'none';
-                clearDataSection.style.display = 'none';
-            } else {
-                container.style.display = 'grid';
-                emptyState.style.display = 'none';
-                legend.style.display = 'block';
-                clearDataSection.style.display = 'block';
-                renderAllParkingLots();
-            }
-        }
-
-        // Render all parking lots
-        function renderAllParkingLots() {
-            const container = document.getElementById('parkingLotsContainer');
-            container.innerHTML = '';
-            parkingLots.forEach(lot => {
-                addLotToDOM(lot);
-                renderParkingLot(lot);
+            // Execute any scripts from user.html
+            const scripts = contentDiv.querySelectorAll('script');
+            scripts.forEach(script => {
+                const newScript = document.createElement('script');
+                newScript.textContent = script.textContent;
+                document.head.appendChild(newScript);
             });
-        }
-
-        // Add lot HTML to DOM - Updated for grid layout
-        function addLotToDOM(lot) {
-            const container = document.getElementById('parkingLotsContainer');
-            const isEmpty = lot.occupiedSpots === 0;
-            const statusText = isEmpty ? 'Green | Available' : 'Red | Busy';
-            const statusClass = isEmpty ? 'status-green' : 'status-red';
             
-            const lotHtml = `
-                <div class="parking-lot" id="lot-container-${lot.id}">
-                    <div class="lot-header">
-                        <div class="lot-title">${lot.name}</div>
-                        <div class="lot-actions">
-                            <button class="btn btn-primary" 
-                                    id="edit-btn-${lot.id}"
-                                    onclick="editLot(${lot.id})"
-                                    title="Edit this parking lot">
-                                <i class="fas fa-edit"></i>
-                                Edit
-                            </button>
-                            <button class="btn-delete-lot" 
-                                    id="delete-btn-${lot.id}"
-                                    onclick="showDeleteModal(${lot.id})"
-                                    ${!isEmpty ? 'disabled' : ''}
-                                    title="${isEmpty ? 'Delete this parking lot' : 'Cannot delete - lot has occupied spots'}">
-                                <i class="fas fa-trash"></i>
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                    <div class="lot-status">
-                        <span class="${statusClass}" id="lot${lot.id}-status">${statusText}</span><br>
-                        <span class="status-green">(Occupied: <span id="lot${lot.id}-occupied">${lot.occupiedSpots}</span>/${lot.totalSpots})</span>
-                    </div>
-                    <div class="parking-grid" id="lot${lot.id}-grid">
-                    </div>
-                </div>
-            `;
-            
-            container.insertAdjacentHTML('beforeend', lotHtml);
+            // Hide loading and show content
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+        } else {
+            throw new Error('Failed to load users page');
         }
+    } catch (error) {
+        console.error('Error loading users content:', error);
+        contentDiv.innerHTML = `
+            <div class="text-center text-danger mt-5">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem;"></i>
+                <h4>Failed to Load Users Management</h4>
+                <p>Unable to load the users management page. Please try again.</p>
+                <button class="btn btn-primary" onclick="loadUsersContent()">
+                    <i class="fas fa-retry me-2"></i>Retry
+                </button>
+            </div>
+        `;
+        loadingDiv.style.display = 'none';
+        contentDiv.style.display = 'block';
+    }
+}function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        window.location.href = '/logout';
+    }
+}
 
-        // Render parking lot spots
-        function renderParkingLot(lot) {
-            const gridElement = document.getElementById(`lot${lot.id}-grid`);
-            if (!gridElement) return;
 
-            gridElement.innerHTML = '';
-            
-            lot.spots.forEach(spot => {
-                const spotElement = document.createElement('div');
-                spotElement.className = `parking-spot ${spot.occupied ? 'spot-occupied' : 'spot-available'}`;
-                spotElement.textContent = spot.occupied ? 'O' : 'A';
-                spotElement.onclick = () => toggleSpot(lot.id, spot.id);
-                gridElement.appendChild(spotElement);
-            });
+    document.addEventListener('DOMContentLoaded', function() {
+    // Load home page by default
+    showSection('home');
+});
 
-            updateLotDisplay(lot);
-        }
 
-        // Update lot display (status and delete button)
-        function updateLotDisplay(lot) {
-            const deleteBtn = document.getElementById(`delete-btn-${lot.id}`);
-            const statusElement = document.getElementById(`lot${lot.id}-status`);
-            const isEmpty = lot.occupiedSpots === 0;
-            
-            if (deleteBtn) {
-                deleteBtn.disabled = !isEmpty;
-                deleteBtn.title = isEmpty ? 'Delete this parking lot' : 'Cannot delete - lot has occupied spots';
-            }
-            
-            if (statusElement) {
-                statusElement.textContent = isEmpty ? 'Green | Available' : 'Red | Busy';
-                statusElement.className = isEmpty ? 'status-green' : 'status-red';
-            }
-        }
 
-        // Toggle spot occupancy (API call)
-        async function toggleSpot(lotId, spotId) {
-            const response = await fetch(`/api/lots/${lotId}/spots/${spotId}/toggle`, { method: 'POST' });
-            if (response.ok) {
-                await loadParkingLots();
-                updateDisplay();
-            } else {
-                alert('Failed to update spot.');
-            }
-        }
-
-        // Show delete confirmation modal
-        function showDeleteModal(lotId) {
-            const lot = parkingLots.find(l => l.id === lotId);
-            if (!lot) return;
-
-            if (lot.occupiedSpots > 0) {
-                showOccupiedSpotsForLot(lot);
-                return;
-            }
-
-            lotToDelete = lotId;
-            document.getElementById('modalTitle').textContent = 'Confirm Deletion';
-            document.getElementById('modalMessage').textContent = `Are you sure you want to delete "${lot.name}"? This action cannot be undone.`;
-            document.getElementById('confirmationModal').style.display = 'flex';
-        }
-
-        // Show all occupied spots for a lot in a modal
-        function showOccupiedSpotsForLot(lot) {
-            let html = `<div><strong>Occupied Spots in "${lot.name}"</strong></div><hr>`;
-            lot.spots.filter(s => s.occupied).forEach(s => {
-                html += `
-                    <div class="mb-2">
-                        <span><strong>Spot ID:</strong> ${s.id}</span>
-                        <button class="btn btn-outline-info btn-sm ms-2" onclick="showOccupiedSpotDetails(${lot.id}, ${s.id})">
-                            View Details
-                        </button>
-                    </div>
-                `;
-            });
-            html += `<div class="mt-2 text-muted" style="font-size:0.95em;">Click "View Details" to see customer info for each occupied spot.</div>`;
-            document.getElementById('occupiedSpotDetailsContent').innerHTML = html;
-            document.getElementById('occupiedSpotDetailsModal').style.display = 'flex';
-        }
-
-        // Show details for a specific occupied spot
-        function showOccupiedSpotDetails(lotId, spotId) {
-            const lot = parkingLots.find(l => l.id === lotId);
-            if (!lot) return;
-            const spot = lot.spots.find(s => s.id === spotId);
-            if (!spot || !spot.occupied) return;
-
-            let html = `
-                <div><strong>ID:</strong> ${spot.id}</div>
-                <div><strong>Customer ID:</strong> ${spot.customer?.id || 'N/A'}</div>
-                <div><strong>Vehicle number:</strong> ${spot.customer?.vehicleNumber || 'N/A'}</div>
-                <div><strong>Date/time of parking:</strong> ${spot.customer?.entryDate || 'N/A'}</div>
-                <div><strong>Est. parking cost:</strong> ₹${lot.pricePerHour ? lot.pricePerHour : 'N/A'} / hour</div>
-            `;
-            document.getElementById('occupiedSpotDetailsContent').innerHTML = html +
-                `<div class="modal-buttons mt-3">
-                    <button type="button" class="btn btn-secondary" onclick="closeOccupiedSpotDetailsModal()">
-                        <i class="fas fa-times me-1"></i>Close
-                    </button>
-                </div>`;
-        }
-
-        // Close occupied spot details modal
-        function closeOccupiedSpotDetailsModal() {
-            document.getElementById('occupiedSpotDetailsModal').style.display = 'none';
-        }
-
-        // Confirm deletion (API call)
-        async function confirmDelete() {
-            if (lotToDelete === null) return;
-            const response = await fetch(`/api/lots/${lotToDelete}`, { method: 'DELETE' });
-            if (response.ok) {
-                await loadParkingLots();
-                updateDisplay();
-                alert('Parking lot has been permanently deleted!');
-            } else {
-                alert('Failed to delete parking lot.');
-            }
-            closeModal();
-        }
-
-        // Close modal
-        function closeModal() {
-            document.getElementById('confirmationModal').style.display = 'none';
-            lotToDelete = null;
-        }
-
-        // Toggle add lot form
-        function toggleAddLotForm() {
-            const form = document.getElementById('addLotForm');
-            const isVisible = form.style.display === 'block';
-            form.style.display = isVisible ? 'none' : 'block';
-            if (!isVisible) {
-                document.getElementById('lotName').focus();
-            }
-        }
-
-        // Add new parking lot (API call)
-        async function addNewLot() {
-            const nameInput = document.getElementById('lotName');
-            const spotsInput = document.getElementById('lotSpots');
-            const addressInput = document.getElementById('address');
-            const pinCodeInput = document.getElementById('pinCode');
-            const priceInput = document.getElementById('pricePerHour');
-
-            const name = nameInput.value.trim();
-            const spots = parseInt(spotsInput.value);
-            const address = addressInput.value.trim();
-            const pinCode = pinCodeInput.value.trim();
-            const pricePerHour = parseFloat(priceInput.value);
-
-            if (!name) {
-                alert('Please enter a lot name');
-                nameInput.focus();
-                return;
-            }
-            if (spots < 5 || spots > 50) {
-                alert('Number of spots must be between 5 and 50');
-                spotsInput.focus();
-                return;
-            }
-            if (parkingLots.some(lot => lot.name.toLowerCase() === name.toLowerCase())) {
-                alert('A parking lot with this name already exists. Please choose a different name.');
-                nameInput.focus();
-                return;
-            }
-
-            const response = await fetch('/api/lots', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name,
-                    address,
-                    pinCode,
-                    pricePerHour,
-                    totalSpots: spots
-                })
-            });
-            if (response.ok) {
-                await loadParkingLots();
-                updateDisplay();
-                toggleAddLotForm();
-                alert(`Parking lot "${name}" with ${spots} spots has been created successfully!`);
-            } else {
-                alert('Failed to create parking lot.');
-            }
-        }
-
-        // Clear all parking lot data (API call)
-        async function clearAllData() {
-            if (parkingLots.length === 0) {
-                alert('No data to clear.');
-                return;
-            }
-            if (confirm('Are you sure you want to delete ALL parking lots? This action cannot be undone.')) {
-                const response = await fetch('/api/lots', { method: 'DELETE' });
-                if (response.ok) {
-                    await loadParkingLots();
-                    updateDisplay();
-                    alert('All parking lot data has been cleared.');
-                } else {
-                    alert('Failed to clear parking lot data.');
-                }
-            }
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('confirmationModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
-        });
-
-        // Edit lot functionality
-        // Show Edit Lot Modal with current values
-        function editLot(lotId) {
-            const lot = parkingLots.find(l => l.id === lotId);
-            if (!lot) return;
-
-            lotToEdit = lotId;
-            document.getElementById('editLotName').value = lot.name || '';
-            document.getElementById('editLotAddress').value = lot.address || '';
-            document.getElementById('editLotPinCode').value = lot.pinCode || '';
-            document.getElementById('editLotPrice').value = lot.pricePerHour || '';
-
-            document.getElementById('editLotModal').style.display = 'flex';
-        }
-
-        // Save changes from Edit Lot Modal (API call)
-        document.getElementById('editLotFormFields').onsubmit = async function(e) {
-            e.preventDefault();
-            if (lotToEdit === null) return;
-
-            const lot = parkingLots.find(l => l.id === lotToEdit);
-            if (!lot) return;
-
-            const newName = document.getElementById('editLotName').value.trim();
-            const newAddress = document.getElementById('editLotAddress').value.trim();
-            const newPinCode = document.getElementById('editLotPinCode').value.trim();
-            const newPrice = parseFloat(document.getElementById('editLotPrice').value);
-
-            if (!newName) {
-                alert('Lot name cannot be empty.');
-                return;
-            }
-            if (!newAddress) {
-                alert('Address cannot be empty.');
-                return;
-            }
-            if (!newPinCode) {
-                alert('Pin code cannot be empty.');
-                return;
-            }
-            if (isNaN(newPrice) || newPrice < 0) {
-                alert('Price must be a valid number.');
-                return;
-            }
-            if (parkingLots.some(l => l.id !== lotToEdit && l.name.toLowerCase() === newName.toLowerCase())) {
-                alert('A parking lot with this name already exists. Please choose a different name.');
-                return;
-            }
-
-            const response = await fetch(`/api/lots/${lotToEdit}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: newName,
-                    address: newAddress,
-                    pinCode: newPinCode,
-                    pricePerHour: newPrice
-                })
-            });
-            if (response.ok) {
-                await loadParkingLots();
-                updateDisplay();
-                closeEditLotModal();
-                alert('Parking lot updated successfully!');
-            } else {
-                alert('Failed to update parking lot.');
-            }
-        };
-
-        // Close Edit Lot Modal
-        function closeEditLotModal() {
-            document.getElementById('editLotModal').style.display = 'none';
-            lotToEdit = null;
-        }
     </script>
 </body>
 </html>

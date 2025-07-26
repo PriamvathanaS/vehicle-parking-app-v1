@@ -23,6 +23,7 @@ def create_app():
     # Initialize database
     db.init_app(app)
     
+
     return app
 
 def init_database(app):
@@ -63,16 +64,18 @@ def init_database(app):
             print(f"❌ Database initialization error: {e}")
             db.session.rollback()
 
+
+
 # Create the Flask application
 app = create_app()
 
 # Initialize database and create default admin
 init_database(app)
 
-# Import and register routes from controller
 with app.app_context():
     from controller.route import bp
     app.register_blueprint(bp)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+
+    app.run(debug=True, host='0.0.0.0', port=5000)

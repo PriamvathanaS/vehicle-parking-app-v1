@@ -5,10 +5,6 @@ from controller.model import Admin, User, ParkingLot, ParkingSpot, ReserveParkin
 # Create Blueprint
 bp = Blueprint('main', __name__)
 
-# ================================
-# AUTHENTICATION ROUTES
-# ================================
-
 @bp.route('/')
 def home():
     """Home page - Login form"""
@@ -102,10 +98,6 @@ def logout():
     flash('You have been logged out successfully!', 'info')
     return redirect(url_for('main.home'))
 
-# ================================
-# DASHBOARD ROUTES
-# ================================
-
 @bp.route('/admin-dashboard')
 def admin_dashboard():
     """Admin dashboard page"""
@@ -129,46 +121,42 @@ def user_dashboard():
     user_name = session.get('user_name', 'User')
     user_email = session.get('user_email', '')
     
-    return render_template('user.html', user_name=user_name, user_email=user_email)
+    return render_template('user-dashboard.html', user_name=user_name, user_email=user_email)
 
-@bp.route('/test-admin')
-def test_admin():
-    """Test route to verify admin account exists"""
-    admin = Admin.query.filter_by(email='admin@gmail.com').first()
-    if admin:
-        return f"""
-        <h2>✅ Admin Account Exists!</h2>
-        <p><strong>Email:</strong> {admin.email}</p>
-        <p><strong>Created:</strong> {admin.created_at}</p>
-        <p><strong>Password Test:</strong> {'✅ Correct' if admin.check_password('Admin@123') else '❌ Incorrect'}</p>
-        <hr>
-        <h3>Login Test:</h3>
-        <form method="POST" action="/login">
-            <p>Email: <input type="email" name="email" value="admin@gmail.com" readonly></p>
-            <p>Password: <input type="password" name="password" value="Admin@123"></p>
-            <p><button type="submit">Test Admin Login</button></p>
-        </form>
-        <p><a href="/">← Back to Login Page</a></p>
-        """
-    else:
-        return """
-        <h2>❌ Admin Account Not Found!</h2>
-        <p>Admin account was not created properly.</p>
-        <p><a href="/">← Back to Login Page</a></p>
-        """
+@bp.route('/admin/users')
+def admin_users():
+    """Admin users management page"""
+    # Check if user is logged in as admin
+    if session.get('user_type') != 'admin':
+        flash('Please login as admin to access this page.', 'error')
+        return redirect(url_for('main.home'))
+    
+    return render_template('admin-user.html')
 
-# ================================
-# API ROUTES FOR PARKING MANAGEMENT
-# ================================
+@bp.route('/admin/home')
+def admin_home():
+    """Admin parking management page"""
+    # Check if user is logged in as admin
+    if session.get('user_type') != 'admin':
+        flash('Please login as admin to access this page.', 'error')
+        return redirect(url_for('main.home'))
+    
+    return render_template('admin-home.html')
 
 @bp.route('/api/lots', methods=['GET'])
 def get_lots():
     """Get all parking lots with their spots"""
+    print("🔧 DEBUG: GET /api/lots - Fetching all parking lots")
+    
     try:
         lots = ParkingLot.query.all()
-        result = []
+        print(f"🔧 DEBUG: Found {len(lots)} parking lots in database")
         
+        result = []
         for lot in lots:
+            occupied_count = sum(1 for s in lot.spots if s.status == 'O')
+            print(f"🔧 DEBUG: Lot {lot.id} has {occupied_count}/{len(lot.spots)} occupied spots")
+            
             result.append({
                 "id": lot.id,
                 "name": lot.prime_location_name,
@@ -176,94 +164,169 @@ def get_lots():
                 "pinCode": lot.pin_code,
                 "pricePerHour": lot.price,
                 "totalSpots": lot.maximum_number_of_spots,
-                "occupiedSpots": sum(1 for s in lot.spots if s.status == 'O'),
+                "occupiedSpots": occupied_count,
                 "spots": [
                     {
                         "id": s.id,
                         "occupied": s.status == 'O',
-                        "customer": s.customer_info()
+                        "customer": None  # No customer data
                     } for s in lot.spots
                 ]
             })
         
+        print(f"🔧 DEBUG: Returning {len(result)} lots to frontend")
         return jsonify(result)
         
     except Exception as e:
+        print(f"🔧 DEBUG: ERROR in get_lots: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @bp.route('/api/lots', methods=['POST'])
 def add_lot():
-    """Add new parking lot"""
+    """Add new parking lot - SIMPLIFIED VERSION"""
+    print("🔧 DEBUG: POST /api/lots - Adding new parking lot")
+    
     try:
-        data = request.json
+        # Check admin access
+        if session.get('user_type') != 'admin':
+            print("🔧 DEBUG: Access denied - not admin user")
+            return jsonify({"error": "Admin access required"}), 403
         
-        # Validate required fields
-        required_fields = ['name', 'address', 'pinCode', 'pricePerHour', 'totalSpots']
-        if not all(field in data for field in required_fields):
-            return jsonify({"error": "Missing required fields"}), 400
+        # Get JSON data
+        if not request.is_json:
+            print(f"🔧 DEBUG: ERROR: Request is not JSON. Content-Type: {request.content_type}")
+            return jsonify({"error": "Request must be JSON"}), 400
         
-        # Check if lot name already exists
-        existing_lot = ParkingLot.query.filter_by(prime_location_name=data['name']).first()
+        data = request.get_json()
+        print(f"🔧 DEBUG: Received data: {data}")
+        
+        if data is None:
+            print("🔧 DEBUG: ERROR: No JSON data received")
+            return jsonify({"error": "No JSON data received"}), 400
+        
+        # Extract and validate data
+        name = str(data.get('name', '')).strip()
+        address = str(data.get('address', '')).strip()
+        pin_code = str(data.get('pinCode', '')).strip()
+        price_per_hour = float(data.get('pricePerHour', 0))
+        total_spots = int(data.get('totalSpots', 0))
+        
+        print(f"🔧 DEBUG: Parsed data - name='{name}', address='{address}', pin_code='{pin_code}', price={price_per_hour}, spots={total_spots}")
+        
+        # Basic validation
+        if not name or not address or not pin_code:
+            return jsonify({"error": "Name, address, and pin code are required"}), 400
+        
+        if price_per_hour <= 0:
+            return jsonify({"error": "Price per hour must be greater than 0"}), 400
+        
+        if total_spots < 5 or total_spots > 50:
+            return jsonify({"error": "Total spots must be between 5 and 50"}), 400
+        
+        # Check for duplicate lot names
+        existing_lot = ParkingLot.query.filter_by(prime_location_name=name).first()
         if existing_lot:
-            return jsonify({"error": "Parking lot with this name already exists"}), 400
+            print(f"🔧 DEBUG: ERROR: Lot with name '{name}' already exists")
+            return jsonify({"error": f"Parking lot with name '{name}' already exists"}), 400
         
         # Create new parking lot
         lot = ParkingLot(
-            prime_location_name=data['name'],
-            address=data['address'],
-            pin_code=data['pinCode'],
-            price=data['pricePerHour'],
-            maximum_number_of_spots=data['totalSpots']
+            prime_location_name=name,
+            address=address,
+            pin_code=pin_code,
+            price=price_per_hour,
+            maximum_number_of_spots=total_spots
         )
         
+        print(f"🔧 DEBUG: Created lot object")
+        
+        # Add to session and flush to get ID
         db.session.add(lot)
-        db.session.commit()
+        db.session.flush()
         
-        # Create parking spots for this lot
-        for i in range(1, lot.maximum_number_of_spots + 1):
-            spot = ParkingSpot(lot_id=lot.id, status='A')
+        lot_id = lot.id
+        print(f"🔧 DEBUG: Lot added to session with ID: {lot_id}")
+        
+        # Create simple parking spots (NO CUSTOMER DATA)
+        spots_created = 0
+        for i in range(total_spots):
+            spot = ParkingSpot(
+                lot_id=lot_id, 
+                status='A'  # Just available status, no customer data
+            )
             db.session.add(spot)
+            spots_created += 1
         
+        print(f"🔧 DEBUG: Created {spots_created} simple parking spots")
+        
+        # Commit all changes
         db.session.commit()
+        print("🔧 DEBUG: Database commit successful")
         
-        return jsonify({"success": True, "message": "Parking lot created successfully"}), 201
+        success_message = f"Parking lot '{name}' created successfully with {total_spots} spots"
+        print(f"🔧 DEBUG: SUCCESS: {success_message}")
+        
+        return jsonify({
+            "success": True,
+            "message": success_message,
+            "lot_id": lot_id
+        }), 201
         
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        print(f"🔧 DEBUG: ERROR in add_lot: {str(e)}")
+        import traceback
+        print(f"🔧 DEBUG: Traceback: {traceback.format_exc()}")
+        
+        try:
+            db.session.rollback()
+            print("🔧 DEBUG: Database rollback completed")
+        except Exception as rollback_error:
+            print(f"🔧 DEBUG: Rollback error: {str(rollback_error)}")
+        
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
-@bp.route('/api/lots/<int:lot_id>', methods=['PUT'])
-def edit_lot(lot_id):
-    """Edit existing parking lot"""
+@bp.route('/api/lots/<int:lot_id>/spots/<int:spot_id>/toggle', methods=['POST'])
+def toggle_spot(lot_id, spot_id):
+    """Toggle parking spot occupancy status - SIMPLIFIED VERSION"""
+    print(f"🔧 DEBUG: POST toggle spot - lot_id: {lot_id}, spot_id: {spot_id}")
+    
     try:
-        data = request.json
-        lot = ParkingLot.query.get_or_404(lot_id)
+        # Validate admin access
+        if session.get('user_type') != 'admin':
+            print("🔧 DEBUG: Access denied - not admin user")
+            return jsonify({"error": "Admin access required"}), 403
         
-        # Check if new name conflicts with existing lots (excluding current lot)
-        if 'name' in data:
-            existing_lot = ParkingLot.query.filter(
-                ParkingLot.prime_location_name == data['name'],
-                ParkingLot.id != lot_id
-            ).first()
-            if existing_lot:
-                return jsonify({"error": "Parking lot with this name already exists"}), 400
+        spot = ParkingSpot.query.filter_by(lot_id=lot_id, id=spot_id).first()
         
-        # Update lot details
-        if 'name' in data:
-            lot.prime_location_name = data['name']
-        if 'address' in data:
-            lot.address = data['address']
-        if 'pinCode' in data:
-            lot.pin_code = data['pinCode']
-        if 'pricePerHour' in data:
-            lot.price = data['pricePerHour']
+        if not spot:
+            print(f"🔧 DEBUG: ERROR: Spot not found - lot_id: {lot_id}, spot_id: {spot_id}")
+            return jsonify({"error": "Parking spot not found"}), 404
+        
+        print(f"🔧 DEBUG: Found spot - current status: {spot.status}")
+        
+        # Simple toggle - just change status, no customer data
+        if spot.status == 'A':
+            spot.status = 'O'  # Mark as occupied
+            print(f"🔧 DEBUG: Marked spot as occupied")
+        else:
+            spot.status = 'A'  # Mark as available
+            print(f"🔧 DEBUG: Marked spot as available")
         
         db.session.commit()
+        print("🔧 DEBUG: Spot status updated successfully")
         
-        return jsonify({"success": True, "message": "Parking lot updated successfully"})
+        return jsonify({
+            "success": True,
+            "message": f"Spot status updated to {'occupied' if spot.status == 'O' else 'available'}",
+            "new_status": spot.status
+        })
         
     except Exception as e:
-        db.session.rollback()
+        print(f"🔧 DEBUG: ERROR in toggle_spot: {str(e)}")
+        try:
+            db.session.rollback()
+        except:
+            pass
         return jsonify({"error": str(e)}), 500
 
 @bp.route('/api/lots/<int:lot_id>', methods=['DELETE'])
@@ -280,43 +343,11 @@ def delete_lot(lot_id):
         # Delete all spots first
         ParkingSpot.query.filter_by(lot_id=lot.id).delete()
         
-        # Delete reservations for this lot's spots
-        spot_ids = [spot.id for spot in lot.spots]
-        if spot_ids:
-            ReserveParkingSpot.query.filter(ReserveParkingSpot.spot_id.in_(spot_ids)).delete()
-        
         # Delete the lot
         db.session.delete(lot)
         db.session.commit()
         
         return jsonify({"success": True, "message": "Parking lot deleted successfully"})
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-@bp.route('/api/lots/<int:lot_id>/spots/<int:spot_id>/toggle', methods=['POST'])
-def toggle_spot(lot_id, spot_id):
-    """Toggle parking spot occupancy status"""
-    try:
-        spot = ParkingSpot.query.filter_by(lot_id=lot_id, id=spot_id).first_or_404()
-        
-        if spot.status == 'A':
-            # Mark as occupied
-            spot.status = 'O'
-            spot.customer_id = "CUST" + str(spot.id)
-            spot.vehicle_number = "MH12AB" + str(1000 + spot.id)
-            spot.entry_date = "2024-07-22"
-        else:
-            # Mark as available
-            spot.status = 'A'
-            spot.customer_id = None
-            spot.vehicle_number = None
-            spot.entry_date = None
-        
-        db.session.commit()
-        
-        return jsonify({"success": True, "message": "Spot status updated successfully"})
         
     except Exception as e:
         db.session.rollback()
@@ -342,7 +373,6 @@ def clear_lots():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
-
 # ================================
 # USER MANAGEMENT ROUTES (Admin Only)
 # ================================

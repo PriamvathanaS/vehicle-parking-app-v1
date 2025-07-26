@@ -64,21 +64,11 @@ class ParkingSpot(db.Model):
     lot_id = db.Column(db.Integer, db.ForeignKey('parking_lot.id'), nullable=False)
     status = db.Column(db.String(1), nullable=False, default='A')  # O-occupied, A-available
 
-    # Customer info fields
-    customer_id = db.Column(db.String(20), nullable=True)
-    vehicle_number = db.Column(db.String(20), nullable=True)
-    entry_date = db.Column(db.String(30), nullable=True)
-
     def occupied(self):
         return self.status == 'O'
 
     def customer_info(self):
-        if self.occupied():
-            return {
-                "id": self.customer_id,
-                "vehicleNumber": self.vehicle_number,
-                "entryDate": self.entry_date
-            }
+        """Return None - no customer data stored"""
         return None
 
 class ReserveParkingSpot(db.Model):
