@@ -254,6 +254,58 @@
         .btn-edit-lot:hover {
             background-color: #0056b3;
         }
+
+        /* Tooltip Styles for Spot Information */
+        .spot-tooltip {
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            max-width: 300px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+        }
+
+        .tooltip-header {
+            border-bottom: 1px solid #555;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #fff;
+        }
+
+        .tooltip-body p {
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+
+        .tooltip-body hr {
+            border-color: #555;
+            margin: 8px 0;
+        }
+
+        .overdue-warning {
+            color: #ff6b6b !important;
+            font-weight: bold;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border-left: 3px solid #ff6b6b;
+        }
+
+        /* Update parking spot hover styles */
+        .spot-occupied:hover {
+            background-color: #a71e2a !important;
+            transform: scale(1.1);
+            cursor: help;
+        }
+
+        .spot-available:hover {
+            background-color: #1e6b31 !important;
+            transform: scale(1.05);
+            cursor: default;
+        }
     </style>
 </head>
 <body>
@@ -528,32 +580,105 @@
                 const spotElement = document.createElement('div');
                 spotElement.className = `parking-spot ${spot.occupied ? 'spot-occupied' : 'spot-available'}`;
                 spotElement.textContent = spot.occupied ? 'O' : 'A';
-                spotElement.onclick = () => toggleSpot(lot.id, spot.id);
+                
+                // Add data attributes for spot information
+                spotElement.setAttribute('data-lot-id', lot.id);
+                spotElement.setAttribute('data-spot-id', spot.id);
+                
+                // Add hover functionality instead of click to toggle
+                spotElement.addEventListener('mouseenter', (e) => showSpotInfo(e, lot.id, spot.id));
+                spotElement.addEventListener('mouseleave', hideSpotInfo);
+                
+                // Make spots non-clickable (read-only)
+                spotElement.style.cursor = spot.occupied ? 'help' : 'default';
+                
                 gridElement.appendChild(spotElement);
             }
             
             debugLog(`✅ Rendered ${lot.totalSpots} spots for lot ${lot.id}`);
         }
 
-        // Toggle spot occupancy
-        async function toggleSpot(lotId, spotId) {
-            debugLog(`🔄 Toggling spot ${spotId} in lot ${lotId}`);
+        // Show spot information on hover
+        async function showSpotInfo(event, lotId, spotId) {
+            const spotElement = event.target;
+            
+            // Only show info for occupied spots
+            if (!spotElement.classList.contains('spot-occupied')) {
+                return;
+            }
+            
             try {
-                const response = await fetch(`/api/lots/${lotId}/spots/${spotId}/toggle`, { method: 'POST' });
+                const response = await fetch(`/api/lots/${lotId}/spots/${spotId}/info`);
                 if (response.ok) {
-                    debugLog('✅ Spot toggled successfully');
-                    await loadParkingLots();
-                    updateDisplay();
-                } else {
-                    const error = await response.json();
-                    debugLog(`❌ Failed to toggle spot: ${error.error}`);
-                    alert('Failed to update spot: ' + error.error);
+                    const spotInfo = await response.json();
+                    showTooltip(event, spotInfo);
                 }
             } catch (error) {
-                debugLog(`❌ Network error: ${error.message}`);
-                alert('Network error: ' + error.message);
+                console.error('Error fetching spot info:', error);
             }
         }
+
+        // Hide spot information tooltip
+        function hideSpotInfo() {
+            const tooltip = document.getElementById('spotTooltip');
+            if (tooltip) {
+                tooltip.remove();
+            }
+        }
+
+        // Show tooltip with spot information
+        function showTooltip(event, spotInfo) {
+            // Remove existing tooltip
+            hideSpotInfo();
+            
+            const tooltip = document.createElement('div');
+            tooltip.id = 'spotTooltip';
+            tooltip.className = 'spot-tooltip';
+            
+            let tooltipContent = `
+                <div class="tooltip-header">
+                    <strong>Parking Spot ${spotInfo.spotId}</strong>
+                </div>
+                <div class="tooltip-body">
+                    <p><strong>Status:</strong> ${spotInfo.status}</p>
+                    <p><strong>Lot:</strong> ${spotInfo.lotName}</p>
+                    <p><strong>Price:</strong> ₹${spotInfo.pricePerHour}/hour</p>
+            `;
+            
+            if (spotInfo.status === 'Occupied' && spotInfo.userId) {
+                const isOverdue = spotInfo.isOverdue ? ' (OVERDUE)' : '';
+                tooltipContent += `
+                    <hr>
+                    <p><strong>User ID:</strong> ${spotInfo.userId}</p>
+                    <p><strong>User Name:</strong> ${spotInfo.userName}</p>
+                    <p><strong>Vehicle:</strong> ${spotInfo.vehicleNumber}</p>
+                    <p><strong>Contact:</strong> ${spotInfo.contactNumber}</p>
+                    <p><strong>Start Time:</strong> ${spotInfo.parkingStartTime}</p>
+                    <p><strong>Expected End:</strong> ${spotInfo.expectedEndTime}</p>
+                    <p><strong>Duration:</strong> ${spotInfo.actualDuration}h / ${spotInfo.expectedDuration}h${isOverdue}</p>
+                    <p><strong>Cost:</strong> ₹${spotInfo.actualCost} / ₹${spotInfo.expectedCost}</p>
+                `;
+                
+                if (spotInfo.isOverdue) {
+                    tooltipContent += `<p class="overdue-warning"><strong>⚠️ Overdue by ${spotInfo.overdueHours}h</strong></p>`;
+                }
+            }
+            
+            tooltipContent += `</div>`;
+            tooltip.innerHTML = tooltipContent;
+            
+            // Position tooltip
+            const rect = event.target.getBoundingClientRect();
+            tooltip.style.position = 'fixed';
+            tooltip.style.left = (rect.right + 10) + 'px';
+            tooltip.style.top = rect.top + 'px';
+            tooltip.style.zIndex = '9999';
+            
+            document.body.appendChild(tooltip);
+        }
+
+        // Remove the old toggle function - spots are now read-only
+        // async function toggleSpot(lotId, spotId) { ... } - REMOVED
 
         // Delete lot
         async function deleteLot(lotId) {
@@ -774,6 +899,17 @@
         document.addEventListener('DOMContentLoaded', function() {
             debugLog('🏁 DOM Content Loaded');
             initializeApp();
+            
+            // Auto-refresh every 30 seconds to reflect real-time bookings/releases
+            setInterval(async () => {
+                debugLog('🔄 Auto-refreshing parking lots data...');
+                try {
+                    await loadParkingLots();
+                    updateDisplay();
+                } catch (error) {
+                    console.error('Auto-refresh error:', error);
+                }
+            }, 30000); // Refresh every 30 seconds
         });
 
         debugLog('✅ Script setup complete');

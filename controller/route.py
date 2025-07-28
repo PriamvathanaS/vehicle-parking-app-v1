@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from controller.database import db
 from controller.model import Admin, User, ParkingLot, ParkingSpot, ReserveParkingSpot
+from datetime import datetime
 
 # Create Blueprint
 bp = Blueprint('main', __name__)
@@ -179,8 +180,8 @@ def admin_profile():
 
 @bp.route('/api/lots', methods=['GET'])
 def get_lots():
-    """Get all parking lots with their spots"""
-    print("🔧 DEBUG: GET /api/lots - Fetching all parking lots")
+    """Get all parking lots with their spots and user information"""
+    print("🔧 DEBUG: GET /api/lots - Fetching all parking lots with user data")
     
     try:
         lots = ParkingLot.query.all()
@@ -191,6 +192,49 @@ def get_lots():
             occupied_count = sum(1 for s in lot.spots if s.status == 'O')
             print(f"🔧 DEBUG: Lot {lot.id} has {occupied_count}/{len(lot.spots)} occupied spots")
             
+            spots_data = []
+            for spot in lot.spots:
+                spot_info = {
+                    "id": spot.id,
+                    "occupied": spot.status == 'O',
+                    "customer": None
+                }
+                
+                # If spot is occupied, get reservation/user information
+                if spot.status == 'O':
+                    # Get the active reservation for this spot
+                    reservation = ReserveParkingSpot.query.filter_by(
+                        spot_id=spot.id
+                    ).order_by(ReserveParkingSpot.parking_timestamp.desc()).first()
+                    
+                    if reservation and reservation.user:
+                        # Calculate duration and cost
+                        current_time = datetime.utcnow()
+                        parking_start = reservation.parking_timestamp
+                        expected_end = reservation.leaving_timestamp
+                        
+                        # Calculate actual duration so far
+                        actual_duration_hours = (current_time - parking_start).total_seconds() / 3600
+                        expected_duration_hours = (expected_end - parking_start).total_seconds() / 3600
+                        actual_cost = actual_duration_hours * reservation.parking_cost_per_unit_time
+                        
+                        spot_info["customer"] = {
+                            "userId": reservation.user.id,
+                            "userName": reservation.user.full_name,
+                            "userEmail": reservation.user.email,
+                            "vehicleNumber": reservation.vehicle_number,
+                            "contactNumber": reservation.contact_number,
+                            "parkingStartTime": parking_start.strftime('%Y-%m-%d %H:%M:%S'),
+                            "expectedEndTime": expected_end.strftime('%Y-%m-%d %H:%M:%S'),
+                            "actualDuration": round(actual_duration_hours, 2),
+                            "expectedDuration": round(expected_duration_hours, 2),
+                            "pricePerHour": reservation.parking_cost_per_unit_time,
+                            "actualCost": round(actual_cost, 2),
+                            "reservationId": reservation.id
+                        }
+                
+                spots_data.append(spot_info)
+            
             result.append({
                 "id": lot.id,
                 "name": lot.prime_location_name,
@@ -199,16 +243,10 @@ def get_lots():
                 "pricePerHour": lot.price,
                 "totalSpots": lot.maximum_number_of_spots,
                 "occupiedSpots": occupied_count,
-                "spots": [
-                    {
-                        "id": s.id,
-                        "occupied": s.status == 'O',
-                        "customer": None  # No customer data
-                    } for s in lot.spots
-                ]
+                "spots": spots_data
             })
         
-        print(f"🔧 DEBUG: Returning {len(result)} lots to frontend")
+        print(f"🔧 DEBUG: Returning {len(result)} lots to frontend with user data")
         return jsonify(result)
         
     except Exception as e:
@@ -411,49 +449,91 @@ def add_lot():
         
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
-@bp.route('/api/lots/<int:lot_id>/spots/<int:spot_id>/toggle', methods=['POST'])
-def toggle_spot(lot_id, spot_id):
-    """Toggle parking spot occupancy status - SIMPLIFIED VERSION"""
-    print(f"🔧 DEBUG: POST toggle spot - lot_id: {lot_id}, spot_id: {spot_id}")
+@bp.route('/api/lots/<int:lot_id>/spots/<int:spot_id>/info', methods=['GET'])
+def get_spot_info(lot_id, spot_id):
+    """Get detailed information about a specific parking spot for hover functionality"""
+    print(f"🔧 DEBUG: GET spot info - lot_id: {lot_id}, spot_id: {spot_id}")
     
     try:
-        # Validate admin access
+        # Check admin access for security
         if session.get('user_type') != 'admin':
-            print("🔧 DEBUG: Access denied - not admin user")
             return jsonify({"error": "Admin access required"}), 403
         
+        # Find the spot
         spot = ParkingSpot.query.filter_by(lot_id=lot_id, id=spot_id).first()
-        
         if not spot:
-            print(f"🔧 DEBUG: ERROR: Spot not found - lot_id: {lot_id}, spot_id: {spot_id}")
             return jsonify({"error": "Parking spot not found"}), 404
         
-        print(f"🔧 DEBUG: Found spot - current status: {spot.status}")
+        # Get lot information
+        lot = ParkingLot.query.get(lot_id)
+        if not lot:
+            return jsonify({"error": "Parking lot not found"}), 404
         
-        # Simple toggle - just change status, no customer data
-        if spot.status == 'A':
-            spot.status = 'O'  # Mark as occupied
-            print(f"🔧 DEBUG: Marked spot as occupied")
-        else:
-            spot.status = 'A'  # Mark as available
-            print(f"🔧 DEBUG: Marked spot as available")
+        # Base spot information
+        spot_info = {
+            "spotId": spot.id,
+            "lotId": lot_id,
+            "lotName": lot.prime_location_name,
+            "status": "Available" if spot.status == 'A' else "Occupied",
+            "pricePerHour": lot.price
+        }
         
-        db.session.commit()
-        print("🔧 DEBUG: Spot status updated successfully")
+        # If spot is occupied, get detailed reservation information
+        if spot.status == 'O':
+            reservation = ReserveParkingSpot.query.filter_by(
+                spot_id=spot.id
+            ).order_by(ReserveParkingSpot.parking_timestamp.desc()).first()
+            
+            if reservation and reservation.user:
+                # Calculate timing information
+                current_time = datetime.utcnow()
+                parking_start = reservation.parking_timestamp
+                expected_end = reservation.leaving_timestamp
+                
+                actual_duration_hours = (current_time - parking_start).total_seconds() / 3600
+                expected_duration_hours = (expected_end - parking_start).total_seconds() / 3600
+                actual_cost = actual_duration_hours * reservation.parking_cost_per_unit_time
+                expected_cost = expected_duration_hours * reservation.parking_cost_per_unit_time
+                
+                # Check if overdue
+                is_overdue = current_time > expected_end
+                overdue_hours = max(0, (current_time - expected_end).total_seconds() / 3600)
+                
+                spot_info.update({
+                    "userId": reservation.user.id,
+                    "userName": reservation.user.full_name,
+                    "userEmail": reservation.user.email,
+                    "vehicleNumber": reservation.vehicle_number,
+                    "contactNumber": reservation.contact_number,
+                    "parkingStartTime": parking_start.strftime('%Y-%m-%d %H:%M:%S'),
+                    "expectedEndTime": expected_end.strftime('%Y-%m-%d %H:%M:%S'),
+                    "currentTime": current_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    "actualDuration": round(actual_duration_hours, 2),
+                    "expectedDuration": round(expected_duration_hours, 2),
+                    "actualCost": round(actual_cost, 2),
+                    "expectedCost": round(expected_cost, 2),
+                    "isOverdue": is_overdue,
+                    "overdueHours": round(overdue_hours, 2) if is_overdue else 0,
+                    "reservationId": reservation.id
+                })
         
-        return jsonify({
-            "success": True,
-            "message": f"Spot status updated to {'occupied' if spot.status == 'O' else 'available'}",
-            "new_status": spot.status
-        })
+        print(f"🔧 DEBUG: Returning spot info: {spot_info}")
+        return jsonify(spot_info)
         
     except Exception as e:
-        print(f"🔧 DEBUG: ERROR in toggle_spot: {str(e)}")
-        try:
-            db.session.rollback()
-        except:
-            pass
+        print(f"🔧 DEBUG: ERROR in get_spot_info: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+@bp.route('/api/lots/<int:lot_id>/spots/<int:spot_id>/toggle', methods=['POST'])
+def toggle_spot(lot_id, spot_id):
+    """DISABLED: Toggle parking spot occupancy status - Admin cannot manually toggle spots"""
+    print(f"🔧 DEBUG: POST toggle spot - DISABLED for lot_id: {lot_id}, spot_id: {spot_id}")
+    
+    # Return error - admin should not be able to manually toggle spots
+    return jsonify({
+        "error": "Manual spot toggling is disabled. Spots are automatically managed through user bookings.",
+        "message": "Parking spots can only be occupied/released through user bookings from the user dashboard."
+    }), 403
 
 @bp.route('/api/lots/<int:lot_id>', methods=['DELETE'])
 def delete_lot(lot_id):
@@ -670,3 +750,408 @@ def update_lot(lot_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
+
+# ================================
+# PARKING BOOKING ROUTES (User)
+# ================================
+
+@bp.route('/api/book_parking_spot', methods=['POST'])
+def book_parking_spot():
+    """Book a parking spot for a user"""
+    print("🔧 DEBUG: POST /api/book_parking_spot - Booking parking spot")
+    
+    try:
+        # Check if user is logged in
+        if session.get('user_type') != 'user':
+            print("🔧 DEBUG: Access denied - not a user")
+            return jsonify({"error": "Access denied. Please login as a user."}), 401
+        
+        user_id = session.get('user_id')
+        if not user_id:
+            print("🔧 DEBUG: No user_id in session")
+            return jsonify({"error": "User session not found."}), 401
+        
+        # Get JSON data
+        if not request.is_json:
+            print("🔧 DEBUG: Request is not JSON")
+            return jsonify({"error": "Request must be JSON"}), 400
+        
+        data = request.get_json()
+        print(f"🔧 DEBUG: Received booking data: {data}")
+        
+        if data is None:
+            return jsonify({"error": "No data received"}), 400
+        
+        # Extract and validate required fields
+        lot_id = data.get('lotId')
+        spot_id = data.get('spotId')
+        vehicle_number = data.get('vehicleNumber', '').strip()
+        contact_number = data.get('contactNumber', '').strip()
+        parking_timestamp = data.get('parkingTimestamp')
+        leaving_timestamp = data.get('leavingTimestamp')
+        
+        print(f"🔧 DEBUG: Extracted data - lot_id: {lot_id}, spot_id: {spot_id}, vehicle: {vehicle_number}")
+        
+        # Validation
+        if not all([lot_id, spot_id, vehicle_number, contact_number, parking_timestamp, leaving_timestamp]):
+            return jsonify({"error": "All fields are required"}), 400
+        
+        # Validate vehicle number format (basic validation)
+        if len(vehicle_number) < 6 or len(vehicle_number) > 15:
+            return jsonify({"error": "Invalid vehicle number format"}), 400
+        
+        # Validate contact number format (basic validation)
+        if len(contact_number) < 10 or len(contact_number) > 15:
+            return jsonify({"error": "Invalid contact number format"}), 400
+        
+        # Check if lot exists
+        lot = ParkingLot.query.get(lot_id)
+        if not lot:
+            print(f"🔧 DEBUG: Lot {lot_id} not found")
+            return jsonify({"error": "Parking lot not found"}), 404
+        
+        # Check if spot exists and belongs to the lot
+        spot = ParkingSpot.query.filter_by(id=spot_id, lot_id=lot_id).first()
+        if not spot:
+            print(f"🔧 DEBUG: Spot {spot_id} not found in lot {lot_id}")
+            return jsonify({"error": "Parking spot not found"}), 404
+        
+        # Check if spot is available
+        if spot.status == 'O':
+            print(f"🔧 DEBUG: Spot {spot_id} is already occupied")
+            return jsonify({"error": "Parking spot is already occupied"}), 400
+        
+        # Check if user exists and is active
+        user = User.query.filter_by(id=user_id, is_active=True).first()
+        if not user:
+            print(f"🔧 DEBUG: User {user_id} not found or inactive")
+            return jsonify({"error": "User not found or inactive"}), 404
+        
+        # Parse timestamps
+        try:
+            parking_dt = datetime.fromisoformat(parking_timestamp.replace('Z', '+00:00'))
+            leaving_dt = datetime.fromisoformat(leaving_timestamp.replace('Z', '+00:00'))
+        except ValueError as e:
+            print(f"🔧 DEBUG: Invalid timestamp format: {e}")
+            return jsonify({"error": "Invalid timestamp format"}), 400
+        
+        # Validate that leaving time is after parking time
+        if leaving_dt <= parking_dt:
+            return jsonify({"error": "Leaving time must be after parking time"}), 400
+        
+        # Check for existing active reservations for this user
+        existing_reservation = ReserveParkingSpot.query.filter_by(
+            user_id=user_id,
+            leaving_timestamp=None
+        ).first()
+        
+        if existing_reservation:
+            return jsonify({"error": "You already have an active parking reservation"}), 400
+        
+        # Start database transaction
+        print("🔧 DEBUG: Starting database transaction")
+        
+        # Update parking spot status from 'A' to 'O'
+        spot.status = 'O'
+        print(f"🔧 DEBUG: Updated spot {spot_id} status to 'O'")
+        
+        # Create new reservation record
+        reservation = ReserveParkingSpot(
+            spot_id=spot_id,
+            user_id=user_id,
+            vehicle_number=vehicle_number.upper(),  # Store in uppercase
+            contact_number=contact_number,
+            parking_timestamp=parking_dt,
+            leaving_timestamp=leaving_dt,
+            parking_cost_per_unit_time=lot.price
+        )
+        
+        db.session.add(reservation)
+        print(f"🔧 DEBUG: Created reservation record with ID pending")
+        
+        # Commit transaction
+        db.session.commit()
+        print("🔧 DEBUG: Database transaction committed successfully")
+        
+        # Calculate duration and total cost
+        duration_hours = (leaving_dt - parking_dt).total_seconds() / 3600
+        total_cost = duration_hours * lot.price
+        
+        success_message = f"Parking spot booked successfully!"
+        print(f"🔧 DEBUG: SUCCESS: {success_message}")
+        
+        # Return success response with booking details
+        return jsonify({
+            "success": True,
+            "message": success_message,
+            "booking": {
+                "id": reservation.id,
+                "lotId": lot_id,
+                "lotName": lot.prime_location_name,
+                "spotId": spot_id,
+                "vehicleNumber": vehicle_number.upper(),
+                "contactNumber": contact_number,
+                "parkingTimestamp": parking_dt.isoformat(),
+                "leavingTimestamp": leaving_dt.isoformat(),
+                "duration": round(duration_hours, 2),
+                "pricePerHour": lot.price,
+                "totalCost": round(total_cost, 2),
+                "userName": user.full_name,
+                "userEmail": user.email
+            }
+        }), 201
+        
+    except Exception as e:
+        print(f"🔧 DEBUG: ERROR in book_parking_spot: {str(e)}")
+        try:
+            db.session.rollback()
+            print("🔧 DEBUG: Database rollback completed")
+        except Exception as rollback_error:
+            print(f"🔧 DEBUG: Rollback error: {str(rollback_error)}")
+        
+        return jsonify({"error": f"Booking failed: {str(e)}"}), 500
+
+# ================================
+# PARKING RELEASE ROUTES (User)
+# ================================
+
+@bp.route('/api/release_parking_spot', methods=['POST'])
+def release_parking_spot():
+    """Release a parking spot when user is done parking"""
+    print("🔧 DEBUG: POST /api/release_parking_spot - Releasing parking spot")
+    
+    try:
+        # Check if user is logged in
+        if session.get('user_type') != 'user':
+            return jsonify({"error": "Access denied. Please login as a user."}), 401
+        
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({"error": "User session not found."}), 401
+        
+        # Get JSON data
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data received"}), 400
+        
+        reservation_id = data.get('reservationId')
+        if not reservation_id:
+            return jsonify({"error": "Reservation ID is required"}), 400
+        
+        # Find the reservation
+        reservation = ReserveParkingSpot.query.filter_by(
+            id=reservation_id,
+            user_id=user_id
+        ).first()
+        
+        if not reservation:
+            return jsonify({"error": "Reservation not found or access denied"}), 404
+        
+        # Get the associated spot
+        spot = ParkingSpot.query.get(reservation.spot_id)
+        if not spot:
+            return jsonify({"error": "Associated parking spot not found"}), 404
+        
+        # Calculate final costs
+        current_time = datetime.utcnow()
+        parking_start = reservation.parking_timestamp
+        expected_end = reservation.leaving_timestamp
+        
+        actual_duration_hours = (current_time - parking_start).total_seconds() / 3600
+        expected_duration_hours = (expected_end - parking_start).total_seconds() / 3600
+        
+        final_cost = max(
+            actual_duration_hours * reservation.parking_cost_per_unit_time,
+            expected_duration_hours * reservation.parking_cost_per_unit_time
+        )
+        
+        # Update reservation with actual leaving time
+        reservation.leaving_timestamp = current_time
+        
+        # Free up the parking spot
+        spot.status = 'A'
+        
+        # Commit changes
+        db.session.commit()
+        
+        is_overdue = current_time > expected_end
+        overdue_hours = max(0, (current_time - expected_end).total_seconds() / 3600)
+        
+        print(f"🔧 DEBUG: Released spot {spot.id} for user {user_id}")
+        
+        return jsonify({
+            "success": True,
+            "message": "Parking spot released successfully",
+            "releaseDetails": {
+                "reservationId": reservation.id,
+                "spotId": spot.id,
+                "actualEndTime": current_time.strftime('%Y-%m-%d %H:%M:%S'),
+                "actualDuration": round(actual_duration_hours, 2),
+                "expectedDuration": round(expected_duration_hours, 2),
+                "finalCost": round(final_cost, 2),
+                "isOverdue": is_overdue,
+                "overdueHours": round(overdue_hours, 2) if is_overdue else 0
+            }
+        })
+        
+    except Exception as e:
+        print(f"🔧 DEBUG: ERROR in release_parking_spot: {str(e)}")
+        db.session.rollback()
+        return jsonify({"error": f"Release failed: {str(e)}"}), 500
+
+@bp.route('/api/user/bookings', methods=['GET'])
+def get_user_bookings():
+    """Get current user's booking history"""
+    try:
+        # Check if user is logged in
+        if session.get('user_type') != 'user':
+            return jsonify({"error": "User not logged in"}), 401
+        
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({"error": "User session invalid"}), 401
+        
+        # Get all user's reservations
+        reservations = ReserveParkingSpot.query.filter_by(user_id=user_id)\
+                                                .order_by(ReserveParkingSpot.parking_timestamp.desc())\
+                                                .all()
+        
+        bookings = []
+        for reservation in reservations:
+            # Get lot information
+            spot = ParkingSpot.query.get(reservation.spot_id)
+            lot = ParkingLot.query.get(spot.lot_id) if spot else None
+            
+            if not lot:
+                continue
+            
+            # Determine status
+            current_time = datetime.utcnow()
+            expected_end = reservation.leaving_timestamp
+            actual_end = reservation.leaving_timestamp
+            
+            # If leaving_timestamp hasn't been updated from original expected time, it's still active
+            is_active = (abs((expected_end - actual_end).total_seconds()) < 60) and (current_time < expected_end)
+            
+            status = "active" if is_active else "completed"
+            
+            # Calculate costs
+            if is_active:
+                duration_hours = (current_time - reservation.parking_timestamp).total_seconds() / 3600
+            else:
+                duration_hours = (actual_end - reservation.parking_timestamp).total_seconds() / 3600
+            
+            total_cost = duration_hours * reservation.parking_cost_per_unit_time
+            
+            bookings.append({
+                "id": reservation.id,
+                "lotId": lot.id,
+                "lotName": lot.prime_location_name,
+                "spotId": reservation.spot_id,
+                "vehicleNumber": reservation.vehicle_number,
+                "contactNumber": reservation.contact_number,
+                "startTime": reservation.parking_timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                "endTime": actual_end.strftime('%Y-%m-%d %H:%M:%S'),
+                "duration": round(duration_hours, 2),
+                "cost": round(total_cost, 2),
+                "status": status,
+                "pricePerHour": reservation.parking_cost_per_unit_time
+            })
+        
+        return jsonify(bookings)
+        
+    except Exception as e:
+        print(f"🔧 DEBUG: ERROR in get_user_bookings: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@bp.route('/api/delete_parking_spot', methods=['DELETE'])
+def delete_parking_spot():
+    """Delete a parking booking and free up the spot"""
+    print("🔧 DEBUG: DELETE /api/delete_parking_spot - Deleting parking booking")
+    
+    try:
+        # Check if user is logged in
+        if session.get('user_type') != 'user':
+            return jsonify({"error": "Access denied. Please login as a user."}), 401
+        
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({"error": "User session not found."}), 401
+        
+        # Get JSON data
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data received"}), 400
+        
+        reservation_id = data.get('reservationId')
+        if not reservation_id:
+            return jsonify({"error": "Reservation ID is required"}), 400
+        
+        print(f"🔧 DEBUG: Attempting to delete reservation {reservation_id} for user {user_id}")
+        
+        # Find the reservation - must belong to the current user
+        reservation = ReserveParkingSpot.query.filter_by(
+            id=reservation_id,
+            user_id=user_id
+        ).first()
+        
+        if not reservation:
+            print(f"🔧 DEBUG: Reservation {reservation_id} not found for user {user_id}")
+            return jsonify({"error": "Reservation not found or access denied"}), 404
+        
+        # Get the associated spot
+        spot = ParkingSpot.query.get(reservation.spot_id)
+        if not spot:
+            print(f"🔧 DEBUG: Associated parking spot {reservation.spot_id} not found")
+            return jsonify({"error": "Associated parking spot not found"}), 404
+        
+        # Get lot information for response
+        lot = ParkingLot.query.get(spot.lot_id)
+        lot_name = lot.prime_location_name if lot else "Unknown"
+        
+        # Store details before deletion for response
+        spot_id = reservation.spot_id
+        vehicle_number = reservation.vehicle_number
+        
+        print(f"🔧 DEBUG: Found reservation - Spot: {spot_id}, Vehicle: {vehicle_number}, Lot: {lot_name}")
+        
+        # Start database transaction
+        # First, free up the parking spot (change status from 'O' to 'A')
+        if spot.status == 'O':
+            spot.status = 'A'
+            print(f"🔧 DEBUG: Changed spot {spot_id} status from 'O' to 'A'")
+        else:
+            print(f"🔧 DEBUG: Warning: Spot {spot_id} was not occupied (status: {spot.status})")
+        
+        # Delete the reservation record
+        db.session.delete(reservation)
+        print(f"🔧 DEBUG: Marked reservation {reservation_id} for deletion")
+        
+        # Commit all changes
+        db.session.commit()
+        print("🔧 DEBUG: Database transaction committed successfully")
+        
+        success_message = f"Booking deleted successfully! Spot {spot_id} is now available."
+        print(f"🔧 DEBUG: SUCCESS: {success_message}")
+        
+        return jsonify({
+            "success": True,
+            "message": success_message,
+            "deletedBooking": {
+                "reservationId": reservation_id,
+                "spotId": spot_id,
+                "lotName": lot_name,
+                "vehicleNumber": vehicle_number,
+                "spotStatus": "Available"
+            }
+        }), 200
+        
+    except Exception as e:
+        print(f"🔧 DEBUG: ERROR in delete_parking_spot: {str(e)}")
+        try:
+            db.session.rollback()
+            print("🔧 DEBUG: Database rollback completed")
+        except Exception as rollback_error:
+            print(f"🔧 DEBUG: Rollback error: {str(rollback_error)}")
+        
+        return jsonify({"error": f"Deletion failed: {str(e)}"}), 500
