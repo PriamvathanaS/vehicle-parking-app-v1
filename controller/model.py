@@ -77,6 +77,8 @@ class ReserveParkingSpot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     spot_id = db.Column(db.Integer, db.ForeignKey('parking_spot.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    vehicle_number = db.Column(db.String(15), nullable=False)  # Format: TN69AB6969
+    contact_number = db.Column(db.String(15), nullable=False)  # Format: +91 9876543210
     parking_timestamp = db.Column(db.DateTime, nullable=False)
     leaving_timestamp = db.Column(db.DateTime, nullable=True)
     parking_cost_per_unit_time = db.Column(db.Float, nullable=False)
