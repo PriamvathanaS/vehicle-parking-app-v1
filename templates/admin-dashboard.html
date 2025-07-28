@@ -522,30 +522,45 @@
     </div>
 </div>
 
-                <!-- Search Tab Content -->
-                <div id="search-content" class="tab-content-section" style="display: none;">
-                    <h2 class="section-title">Search & Reports</h2>
-                    <div class="text-center mt-5">
-                        <i class="fas fa-search" style="font-size: 4rem; color: var(--medium-purple); margin-bottom: 20px;"></i>
-                        <h4 class="text-muted">Search & Reporting Module</h4>
-                        <p class="text-muted">Search through parking data and generate detailed reports.</p>
-                        <p class="text-muted">This functionality is coming soon...</p>
-                    </div>
-                </div>
-
-                <!-- Summary Tab Content -->
-                <div id="summary-content" class="tab-content-section" style="display: none;">
-                    <h2 class="section-title">Summary & Analytics</h2>
-                    <div class="text-center mt-5">
-                        <i class="fas fa-chart-bar" style="font-size: 4rem; color: var(--medium-purple); margin-bottom: 20px;"></i>
-                        <h4 class="text-muted">Analytics Dashboard</h4>
-                        <p class="text-muted">View comprehensive analytics and performance metrics.</p>
-                        <p class="text-muted">This functionality is coming soon...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+     <!-- Search Tab Content -->
+<div id="search-content" class="tab-content-section" style="display: none;">
+    <div id="search-iframe-container" style="width: 100%; height: 80vh;">
+        <iframe id="search-iframe" 
+                src="" 
+                style="width: 100%; height: 100%; border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"
+                onload="handleSearchIframeLoad()">
+        </iframe>
     </div>
+    
+    <!-- Loading state for search -->
+    <div id="search-loading" class="text-center" style="padding: 50px;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading Search Module...</p>
+    </div>
+</div>
+<!-- Add this HTML section after the Search Tab Content (around line 380) in your admin-dashboard.html -->
+
+<!-- Summary Tab Content -->
+<div id="summary-content" class="tab-content-section" style="display: none;">
+    <div id="summary-iframe-container" style="width: 100%; height: 80vh;">
+        <iframe id="summary-iframe" 
+                src="" 
+                style="width: 100%; height: 100%; border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"
+                onload="handleSummaryIframeLoad()">
+        </iframe>
+    </div>
+    
+    <!-- Loading state for summary -->
+    <div id="summary-loading" class="text-center" style="padding: 50px;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading Summary Dashboard...</p>
+    </div>
+</div>
+    
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
@@ -574,6 +589,8 @@ if (section === 'home') {
     loadHomePage();
 } else if (section === 'users') {
     loadUsersPage();
+}else if (section==='search'){
+    loadSearchPage();
 }
     }
     
@@ -621,11 +638,92 @@ function loadHomePage() {
     // Load the admin parking route in iframe
     iframe.src = '/admin/home';
 }
+// Add these JavaScript functions to your admin-dashboard.html script section (around line 450)
 
+// Load summary page
+function loadSummaryPage() {
+    const iframe = document.getElementById('summary-iframe');
+    const loadingDiv = document.getElementById('summary-loading');
+    const iframeContainer = document.getElementById('summary-iframe-container');
+    
+    // Show loading state
+    loadingDiv.style.display = 'block';
+    iframeContainer.style.display = 'none';
+    
+    // Load the admin summary route in iframe
+    iframe.src = '/admin/summary';
+}
+
+// Handle iframe load completion for summary
+function handleSummaryIframeLoad() {
+    const loadingDiv = document.getElementById('summary-loading');
+    const iframeContainer = document.getElementById('summary-iframe-container');
+    
+    // Hide loading and show iframe
+    loadingDiv.style.display = 'none';
+    iframeContainer.style.display = 'block';
+}
+
+// Update the showSection function to handle summary
+// Replace the existing showSection function with this updated version:
+function showSection(section) {
+    // Hide all tab contents
+    const allTabs = document.querySelectorAll('.tab-content-section');
+    allTabs.forEach(tab => tab.style.display = 'none');
+    
+    // Remove active class from all nav links
+    const allNavLinks = document.querySelectorAll('.nav-links a');
+    allNavLinks.forEach(link => link.classList.remove('active'));
+    
+    // Show selected tab content
+    const targetContent = document.getElementById(section + '-content');
+    if (targetContent) {
+        targetContent.style.display = 'block';
+        
+        // Special handling for different sections
+        if (section === 'home') {
+            loadHomePage();
+        } else if (section === 'users') {
+            loadUsersPage();
+        } else if (section === 'search') {
+            loadSearchPage();
+        } else if (section === 'summary') {
+            loadSummaryPage();
+        }
+    }
+    
+    // Add active class to selected nav link
+    const targetNav = document.getElementById('nav-' + section);
+    if (targetNav) {
+        targetNav.classList.add('active');
+    }
+}
 // Handle iframe load completion for parking
 function handleParkingIframeLoad() {
     const loadingDiv = document.getElementById('parking-loading');
     const iframeContainer = document.getElementById('parking-iframe-container');
+    
+    // Hide loading and show iframe
+    loadingDiv.style.display = 'none';
+    iframeContainer.style.display = 'block';
+}
+function loadSearchPage() {
+    const iframe = document.getElementById('search-iframe');
+    const loadingDiv = document.getElementById('search-loading');
+    const iframeContainer = document.getElementById('search-iframe-container');
+    
+    // Show loading state
+    loadingDiv.style.display = 'block';
+    iframeContainer.style.display = 'none';
+    
+    // Load the admin parking route in iframe
+    iframe.src = '/admin/search';
+}
+
+// Handle iframe load completion for parking
+function handleSearchIframeLoad() {
+    const loadingDiv = document.getElementById('search-loading');
+    const iframeContainer = document.getElementById('search-iframe-container');
     
     // Hide loading and show iframe
     loadingDiv.style.display = 'none';

@@ -123,6 +123,7 @@ def user_dashboard():
     
     return render_template('user-dashboard.html', user_name=user_name, user_email=user_email)
 
+
 @bp.route('/admin/users')
 def admin_users():
     """Admin users management page"""
@@ -142,6 +143,39 @@ def admin_home():
         return redirect(url_for('main.home'))
     
     return render_template('admin-home.html')
+@bp.route('/admin/search')
+def admin_search():
+    """Admin search page"""
+    # Check if user is logged in as admin
+    if session.get('user_type') != 'admin':
+        flash('Please login as admin to access this page.', 'error')
+        return redirect(url_for('main.home'))
+    
+    return render_template('admin-search.html')
+
+#route for summary page 
+@bp.route('/admin/summary')
+def admin_summary():
+    """Admin summary/analytics page"""
+    # Check if user is logged in as admin
+    if session.get('user_type') != 'admin':
+        flash('Please login as admin to access this page.', 'error')
+        return redirect(url_for('main.home'))
+    
+    return render_template('admin-summary.html')
+
+# Optional: Add a profile route if you want the "Edit Profile" button to work
+@bp.route('/admin/profile')
+def admin_profile():
+    """Admin profile page"""
+    # Check if user is logged in as admin
+    if session.get('user_type') != 'admin':
+        flash('Please login as admin to access this page.', 'error')
+        return redirect(url_for('main.home'))
+    
+    # For now, redirect back to summary or create a profile template
+    flash('Profile editing feature coming soon!', 'info')
+    return redirect(url_for('main.admin_summary'))
 
 @bp.route('/api/lots', methods=['GET'])
 def get_lots():
@@ -504,3 +538,43 @@ def internal_error(error):
     """Handle 500 errors"""
     db.session.rollback()
     return jsonify({"error": "Internal server error"}), 500
+
+@bp.route('/api/lots/<int:lot_id>', methods=['PUT'])
+def update_lot(lot_id):
+    try:
+        data = request.get_json()
+        lot = ParkingLot.query.get_or_404(lot_id)
+        
+        # Update all lot details with proper validation using correct field names
+        if 'name' in data:
+            lot.prime_location_name = data['name']  # Changed from name to prime_location_name
+        if 'address' in data:
+            lot.address = data['address']
+        if 'pinCode' in data:
+            lot.pin_code = data['pinCode']  # Changed from pinCode to pin_code
+        if 'pricePerHour' in data:
+            lot.price = float(data['pricePerHour'])  # Changed from pricePerHour to price
+        if 'totalSpots' in data:
+            # Validate if spots can be updated
+            current_occupied = sum(1 for spot in lot.spots if spot.status == 'O')
+            if int(data['totalSpots']) < current_occupied:
+                return jsonify({'error': 'Cannot reduce spots below current occupancy'}), 400
+            lot.maximum_number_of_spots = int(data['totalSpots'])  # Changed from totalSpots to maximum_number_of_spots
+        
+        # Commit changes
+        db.session.commit()
+        return jsonify({
+            'message': 'Parking lot updated successfully',
+            'lot': {
+                'id': lot.id,
+                'name': lot.prime_location_name,
+                'address': lot.address,
+                'pinCode': lot.pin_code,
+                'pricePerHour': lot.price,
+                'totalSpots': lot.maximum_number_of_spots
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
