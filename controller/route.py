@@ -215,6 +215,98 @@ def get_lots():
         print(f"🔧 DEBUG: ERROR in get_lots: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+# Add this new route to your route.py file
+
+@bp.route('/api/user/profile', methods=['GET'])
+def get_user_profile():
+    """Get current user's profile information"""
+    try:
+        # Check if user is logged in
+        if session.get('user_type') != 'user':
+            return jsonify({"error": "User not logged in"}), 401
+        
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({"error": "User session invalid"}), 401
+        
+        # Fetch user from database
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Return user profile data
+        profile_data = {
+            "id": user.id,
+            "email": user.email,
+            "fullName": user.full_name,
+            "address": user.address,
+            "pinCode": user.pin_code,
+            "isActive": user.is_active,
+            "createdAt": user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else None
+        }
+        
+        print(f"🔧 DEBUG: Returning profile for user {user.email}: {profile_data}")
+        return jsonify(profile_data)
+        
+    except Exception as e:
+        print(f"🔧 DEBUG: ERROR in get_user_profile: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@bp.route('/api/user/profile', methods=['PUT'])
+def update_user_profile():
+    """Update current user's profile information"""
+    try:
+        # Check if user is logged in
+        if session.get('user_type') != 'user':
+            return jsonify({"error": "User not logged in"}), 401
+        
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({"error": "User session invalid"}), 401
+        
+        # Fetch user from database
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Get update data
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        # Update allowed fields
+        if 'fullName' in data:
+            user.full_name = data['fullName'].strip()
+        if 'address' in data:
+            user.address = data['address'].strip()
+        if 'pinCode' in data:
+            user.pin_code = data['pinCode'].strip()
+        
+        # Commit changes
+        db.session.commit()
+        
+        # Update session data
+        session['user_name'] = user.full_name
+        
+        print(f"🔧 DEBUG: Updated profile for user {user.email}")
+        
+        return jsonify({
+            "success": True,
+            "message": "Profile updated successfully",
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "fullName": user.full_name,
+                "address": user.address,
+                "pinCode": user.pin_code
+            }
+        })
+        
+    except Exception as e:
+        print(f"🔧 DEBUG: ERROR in update_user_profile: {str(e)}")
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
 @bp.route('/api/lots', methods=['POST'])
 def add_lot():
     """Add new parking lot - SIMPLIFIED VERSION"""
