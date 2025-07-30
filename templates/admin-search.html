@@ -3,106 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Search - Parking System</title>
+    <title>Admin Search</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%23B855C7' d='M135.2 117.4L109.1 192H402.9l-26.1-74.6C372.3 104.6 360.2 96 346.6 96H165.4c-13.6 0-25.7 8.6-30.2 21.4zM39.6 196.8L74.8 96.3C88.3 57.8 124.6 32 165.4 32H346.6c40.8 0 77.1 25.8 90.6 64.3l35.2 100.5c23.2 9.6 39.6 32.5 39.6 59.2V304c0 17.7-14.3 32-32 32H448c0 53-43 96-96 96s-96-43-96-96H256c0 53-43 96-96 96s-96-43-96-96H32c-17.7 0-32-14.3-32-32V256c0-26.7 16.4-49.6 39.6-59.2zM128 288a32 32 0 1 1 0 64 32 32 0 1 1 0-64zm288 32a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z'/></svg>" type="image/svg+xml">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .header-bar {
-            background: #e8f5e9;
-            padding: 10px 20px;
-            border-bottom: 1px solid #c8e6c9;
-        }
-        .nav-links {
-            display: flex;
-            gap: 15px;
-        }
-        .nav-links a {
-            text-decoration: none;
-            color: #2e7d32;
-        }
-        .search-section {
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin: 20px;
-        }
-        .parking-lot {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-        }
-        .parking-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 5px;
-            margin-top: 10px;
-        }
-        .spot {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-        }
-        .spot-available {
-            background-color: #4caf50;
-        }
-        .spot-occupied {
-            background-color: #f44336;
-        }
-        .spot-reserved {
-            background-color: #ff9800;
-        }
-        .occupancy-info {
-            color: #666;
-            font-size: 0.9em;
-            margin: 5px 0;
-        }
-        .example-text {
-            color: #666;
-            font-style: italic;
-            margin-bottom: 15px;
-        }
-        .search-results {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        .no-results {
-            text-align: center;
-            color: #666;
-            padding: 20px;
-        }
-        .user-info {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px 0;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-    </style>
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
 </head>
 <body>
-
-    <!-- Search Section -->
     <div class="container mt-4">
         <div class="search-section">
             <div class="row g-3 align-items-center">
@@ -120,56 +27,39 @@
                            placeholder="Enter search string" onkeypress="handleKeyPress(event)">
                 </div>
                 <div class="col-auto">
-                    <button class="btn btn-primary" onclick="performSearch()">
+                    <button class="btn-add-lot" onclick="performSearch()">
                         <i class="fas fa-search"></i> Search
                     </button>
                 </div>
                 <div class="col-auto">
-                    <button class="btn btn-secondary" onclick="clearSearch()">
+                    <button class="btn-delete-lot" onclick="clearSearch()">
                         <i class="fas fa-times"></i> Clear
                     </button>
                 </div>
             </div>
-
-            <!-- Search Results -->
-            <div class="mt-4" id="searchResultsContainer">
-                <div class="example-text">
-                    Search Examples:
-                    <ul>
-                        <li>By Location: Enter location name (e.g., "Velachery", "T Nagar")</li>
-                        <li>By User Email: Enter user email address</li>
-                        <li>By Parking Lot Name: Enter lot name</li>
-                    </ul>
-                </div>
-                
+            <div class="mt-4" id="searchResultsContainer">        
                 <div class="search-results" id="searchResults">
-                    <!-- Results will be populated here -->
+                  
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Perform search based on selected type and query
+        
         async function performSearch() {
             const searchType = document.getElementById('searchType').value;
             const query = document.getElementById('searchQuery').value.trim();
-            const resultsContainer = document.getElementById('searchResults');
-            
-            // Validation
+            const resultsContainer = document.getElementById('searchResults');        
             if (!searchType) {
                 alert('Please select a search type');
                 return;
-            }
-            
+            }            
             if (!query) {
                 alert('Please enter a search query');
                 return;
-            }
-
-            // Show loading
+            }            
             resultsContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
-
             try {
                 let results = [];
 
@@ -189,8 +79,6 @@
                 resultsContainer.innerHTML = `<div class="error-message">Search failed: ${error.message}</div>`;
             }
         }
-
-        // Search by location - fetch parking lots in that location
         async function searchByLocation(location) {
             try {
                 const response = await fetch('/api/lots');
@@ -205,8 +93,6 @@
                 throw new Error('Failed to search by location');
             }
         }
-
-        // Search by user ID - find user and their parking history
         async function searchByUserId(userId) {
             try {
                 const response = await fetch('/api/users');
@@ -216,29 +102,22 @@
                 const user = users.find(u => u.id.toString() === userId.toString());
                 
                 if (!user) return [];
-
-                // Get parking lots to find user's spots
                 const lotsResponse = await fetch('/api/lots');
                 const lots = await lotsResponse.json();
                 
                 const userParkingInfo = [];
-                lots.forEach(lot => {
-                    // In real implementation, you'd have reservations data
-                    // For now, we'll show user info if found
+                lots.forEach(lot => {                    
                     userParkingInfo.push({
                         user: user,
                         parkingLot: lot,
                         searchType: 'userId'
                     });
-                });
-                
+                });                
                 return userParkingInfo.length > 0 ? [userParkingInfo[0]] : [];
             } catch (error) {
                 throw new Error('Failed to search by user ID');
             }
         }
-
-        // Search by email
         async function searchByEmail(email) {
             try {
                 const response = await fetch('/api/users');
@@ -257,8 +136,6 @@
                 throw new Error('Failed to search by email');
             }
         }
-
-        // Search by lot name
         async function searchByLotName(lotName) {
             try {
                 const response = await fetch('/api/lots');
@@ -272,8 +149,6 @@
                 throw new Error('Failed to search by lot name');
             }
         }
-
-        // Display search results
         function displayResults(results, searchType) {
             const resultsContainer = document.getElementById('searchResults');
             
@@ -296,8 +171,6 @@
 
             resultsContainer.innerHTML = html;
         }
-
-        // Create parking lot HTML
         function createParkingLotHTML(lot) {
             const occupiedSpots = lot.occupiedSpots || 0;
             const totalSpots = lot.totalSpots || 0;
@@ -308,12 +181,7 @@
                     <div class="d-flex justify-content-between">
                         <h5>${lot.name} <small class="text-muted">(${lot.address})</small></h5>
                         <div>
-                            <button class="btn btn-sm btn-outline-primary" onclick="editParkingLot('${lot.id}')">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteParkingLot('${lot.id}')">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
+                            
                         </div>
                     </div>
                     <div class="occupancy-info">
@@ -327,11 +195,8 @@
                 </div>
             `;
         }
-
-        // Create spots HTML for parking lot
         function createSpotsHTML(lot) {
             if (!lot.spots || !Array.isArray(lot.spots)) {
-                // Create spots based on total and occupied count
                 let spotsHTML = '';
                 for (let i = 1; i <= lot.totalSpots; i++) {
                     const isOccupied = i <= lot.occupiedSpots;
@@ -355,8 +220,6 @@
                 </div>
             `).join('');
         }
-
-        // Create user info HTML
         function createUserInfoHTML(info) {
             const user = info.user;
             return `
@@ -369,125 +232,22 @@
                             <p><strong>Email:</strong> ${user.email}</p>
                             <p><strong>Address:</strong> ${user.address}</p>
                             <p><strong>PIN Code:</strong> ${user.pinCode}</p>
-                            <p><strong>Status:</strong> 
-                                <span class="badge bg-${user.isActive ? 'success' : 'danger'}">
-                                    ${user.isActive ? 'Active' : 'Inactive'}
-                                </span>
-                            </p>
+                          
                         </div>
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-cog"></i> Actions</h6>
-                            <button class="btn btn-sm btn-outline-primary me-2" onclick="viewUserDetails('${user.id}')">
-                                <i class="fas fa-eye"></i> View Details
-                            </button>
-                            <button class="btn btn-sm btn-outline-warning me-2" onclick="toggleUserStatus('${user.id}')">
-                                <i class="fas fa-toggle-on"></i> Toggle Status
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${user.id}')">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                        </div>
-                    </div>
+                       
                 </div>
             `;
         }
-
-        // Clear search
         function clearSearch() {
             document.getElementById('searchType').value = '';
             document.getElementById('searchQuery').value = '';
             document.getElementById('searchResults').innerHTML = '';
         }
-
-        // Handle Enter key press
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 performSearch();
             }
-        }
-
-        // Action functions
-        function editParkingLot(lotId) {
-            alert(`Edit parking lot: ${lotId}\n(This would open an edit form in a real implementation)`);
-        }
-
-        function deleteParkingLot(lotId) {
-            if (confirm(`Are you sure you want to delete parking lot ${lotId}?`)) {
-                // Make DELETE request to backend
-                fetch(`/api/lots/${lotId}`, {
-                    method: 'DELETE'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Parking lot deleted successfully');
-                        performSearch(); // Refresh results
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                })
-                .catch(error => {
-                    alert(`Error deleting parking lot: ${error.message}`);
-                });
-            }
-        }
-
-        function spotClick(lotId, spotId) {
-            alert(`Clicked spot ${spotId} in lot ${lotId}\n(This would show spot details in a real implementation)`);
-        }
-
-        function viewUserDetails(userId) {
-            alert(`View details for user: ${userId}\n(This would show detailed user information)`);
-        }
-
-        function toggleUserStatus(userId) {
-            if (confirm('Toggle user active/inactive status?')) {
-                // Make PUT request to toggle user status
-                fetch(`/api/users/${userId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        isActive: true // This would be toggled based on current status
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('User status updated successfully');
-                        performSearch(); // Refresh results
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                })
-                .catch(error => {
-                    alert(`Error updating user status: ${error.message}`);
-                });
-            }
-        }
-
-        function deleteUser(userId) {
-            if (confirm(`Are you sure you want to delete user ${userId}? This action cannot be undone.`)) {
-                fetch(`/api/users/${userId}`, {
-                    method: 'DELETE'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('User deleted successfully');
-                        performSearch(); // Refresh results
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                })
-                .catch(error => {
-                    alert(`Error deleting user: ${error.message}`);
-                });
-            }
-        }
-
-        // Update search placeholder based on selected type
+        } 
         document.getElementById('searchType').addEventListener('change', function() {
             const searchQuery = document.getElementById('searchQuery');
             const placeholders = {
