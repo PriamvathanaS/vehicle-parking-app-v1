@@ -99,6 +99,107 @@ def logout():
     flash('You have been logged out successfully!', 'info')
     return redirect(url_for('main.home'))
 
+@bp.route('/change-password', methods=['POST'])
+def change_password():
+    """Handle password change for admin and users"""
+    try:
+        # Check if user is logged in
+        if 'user_type' not in session or 'user_id' not in session:
+            return jsonify({'success': False, 'message': 'Please login first.'}), 401
+        
+        data = request.get_json()
+        current_password = data.get('current_password')
+        new_password = data.get('new_password')
+        
+        # Validate input
+        if not current_password or not new_password:
+            return jsonify({'success': False, 'message': 'Current password and new password are required.'}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({'success': False, 'message': 'New password must be at least 6 characters long.'}), 400
+        
+        user_type = session['user_type']
+        user_id = session['user_id']
+        
+        # Check if it's admin or user and verify current password
+        if user_type == 'admin':
+            admin = Admin.query.get(user_id)
+            if not admin:
+                return jsonify({'success': False, 'message': 'Admin not found.'}), 404
+            
+            if not admin.check_password(current_password):
+                return jsonify({'success': False, 'message': 'Current password is incorrect.'}), 400
+            
+            # Update password
+            admin.set_password(new_password)
+            db.session.commit()
+            
+        elif user_type == 'user':
+            user = User.query.get(user_id)
+            if not user:
+                return jsonify({'success': False, 'message': 'User not found.'}), 404
+            
+            if not user.check_password(current_password):
+                return jsonify({'success': False, 'message': 'Current password is incorrect.'}), 400
+            
+            # Update password
+            user.set_password(new_password)
+            db.session.commit()
+        
+        else:
+            return jsonify({'success': False, 'message': 'Invalid user type.'}), 400
+        
+        return jsonify({'success': True, 'message': 'Password changed successfully!'})
+        
+    except Exception as e:
+        print(f"Error changing password: {str(e)}")
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'An error occurred while changing password.'}), 500
+
+@bp.route('/get-user-info', methods=['GET'])
+def get_user_info():
+    """Get current user information"""
+    try:
+        # Check if user is logged in
+        if 'user_type' not in session or 'user_id' not in session:
+            return jsonify({'success': False, 'message': 'Please login first.'}), 401
+        
+        user_type = session['user_type']
+        user_id = session['user_id']
+        
+        if user_type == 'admin':
+            admin = Admin.query.get(user_id)
+            if not admin:
+                return jsonify({'success': False, 'message': 'Admin not found.'}), 404
+            
+            return jsonify({
+                'success': True,
+                'user_type': 'admin',
+                'username': admin.email.split('@')[0].title(),  # Use part before @ as username
+                'email': admin.email,
+                'full_name': 'Administrator'
+            })
+            
+        elif user_type == 'user':
+            user = User.query.get(user_id)
+            if not user:
+                return jsonify({'success': False, 'message': 'User not found.'}), 404
+            
+            return jsonify({
+                'success': True,
+                'user_type': 'user',
+                'username': user.full_name or user.email.split('@')[0].title(),
+                'email': user.email,
+                'full_name': user.full_name
+            })
+        
+        else:
+            return jsonify({'success': False, 'message': 'Invalid user type.'}), 400
+            
+    except Exception as e:
+        print(f"Error getting user info: {str(e)}")
+        return jsonify({'success': False, 'message': 'An error occurred while getting user info.'}), 500
+
 @bp.route('/admin-dashboard')
 def admin_dashboard():
     """Admin dashboard page"""
@@ -1231,6 +1332,84 @@ def get_user_stats():
     except Exception as e:
         print(f"🔧 DEBUG: ERROR in get_user_stats: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+@bp.route('/api/admin/delete_parking_spot', methods=['DELETE'])
+def admin_delete_parking_spot():
+    
+    
+    try:
+       
+        if session.get('user_type') != 'admin':
+            return jsonify({"error": "Access denied. Admin privileges required."}), 401
+        
+        # Get JSON data
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data received"}), 400
+        
+        lot_id = data.get('lotId')
+        spot_id = data.get('spotId')
+        
+        if not lot_id or not spot_id:
+            return jsonify({"error": "Lot ID and Spot ID are required"}), 400
+        
+        print(f"🔧 DEBUG: Attempting to delete spot {spot_id} from lot {lot_id}")
+        
+        # Find the parking spot by ID (since spot ID is unique)
+        spot = ParkingSpot.query.get(spot_id)
+        if not spot:
+            return jsonify({"error": f"Parking spot with ID {spot_id} not found"}), 404
+        
+        # Verify the spot belongs to the specified lot
+        if spot.lot_id != lot_id:
+            return jsonify({"error": f"Spot {spot_id} does not belong to lot {lot_id}"}), 400
+        
+        # Check if spot is occupied
+        if spot.status == 'O':
+            print(f"🔧 DEBUG: Cannot delete occupied spot {spot_id}")
+            return jsonify({"error": "Cannot delete occupied parking spot. Please wait for the spot to be available."}), 400
+        
+        # Get lot information for response
+        lot = ParkingLot.query.get(lot_id)
+        if not lot:
+            return jsonify({"error": "Parking lot not found"}), 404
+        
+        # Delete any related reservations (cleanup)
+        ReserveParkingSpot.query.filter_by(spot_id=spot.id).delete()
+        
+        # Delete the parking spot
+        db.session.delete(spot)
+        
+        # Update lot's maximum spots count
+        remaining_spots = ParkingSpot.query.filter_by(lot_id=lot_id).count() - 1
+        lot.maximum_number_of_spots = remaining_spots
+        
+        # Commit changes
+        db.session.commit()
+        
+        success_message = f"Parking spot {spot_id} deleted successfully from {lot.prime_location_name}"
+        print(f"🔧 DEBUG: SUCCESS: {success_message}")
+        
+        return jsonify({
+            "success": True,
+            "message": success_message,
+            "deletedSpot": {
+                "lotId": lot_id,
+                "spotId": spot_id,
+                "lotName": lot.prime_location_name,
+                "remainingSpots": remaining_spots
+            }
+        }), 200
+        
+    except Exception as e:
+        print(f"🔧 DEBUG: ERROR in admin_delete_parking_spot: {str(e)}")
+        try:
+            db.session.rollback()
+            print("🔧 DEBUG: Database rollback completed")
+        except Exception as rollback_error:
+            print(f"🔧 DEBUG: Rollback error: {str(rollback_error)}")
+        
+        return jsonify({"error": f"Deletion failed: {str(e)}"}), 500
 
 @bp.route('/api/delete_parking_spot', methods=['DELETE'])
 def delete_parking_spot():

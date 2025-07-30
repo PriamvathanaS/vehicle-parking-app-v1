@@ -111,6 +111,41 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    
+    <div class="modal fade" id="deleteSpotModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Parking Spot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                        <h4 class="mt-3">Are you sure?</h4>
+                        <p class="text-muted">You are about to permanently delete this parking spot:</p>
+                        <div class="alert alert-info">
+                            <strong>Spot:</strong> <span id="deleteSpotId"></span><br>
+                            <strong>Lot:</strong> <span id="deleteSpotLot"></span><br>
+                            <strong>Status:</strong> <span id="deleteSpotStatus"></span>
+                        </div>
+                        <p class="text-danger">
+                            <small><i class="fas fa-info-circle"></i> This action cannot be undone!</small>
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteSpot()">
+                        <i class="fas fa-trash me-2"></i>Delete Spot
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>    
     <script>
         let parkingLots = [];
@@ -124,6 +159,13 @@
                 }
                 
                 parkingLots = await response.json();
+                
+                if (parkingLots.length > 0) {
+                    console.log('🔧 DEBUG: First lot spots:', parkingLots[0].spots);
+                    if (parkingLots[0].spots && parkingLots[0].spots.length > 0) {
+                        console.log('🔧 DEBUG: First spot structure:', parkingLots[0].spots[0]);
+                    }
+                }
                
             } catch (error) {
                 parkingLots = [];
@@ -207,22 +249,34 @@
 
             gridElement.innerHTML = '';
             
-            for (let i = 1; i <= lot.totalSpots; i++) {
-                const spot = lot.spots.find(s => s.id === i) || { id: i, occupied: false };
+           
+            lot.spots.forEach(spot => {
                 const spotElement = document.createElement('div');
                 spotElement.className = `parking-spot ${spot.occupied ? 'spot-occupied' : 'spot-available'}`;
                 spotElement.textContent = spot.occupied ? 'O' : 'A';
                 
                 spotElement.setAttribute('data-lot-id', lot.id);
-                spotElement.setAttribute('data-spot-id', spot.id);
+                spotElement.setAttribute('data-spot-id', spot.id); // Use actual database ID
                 
+                // Add hover events for tooltips
                 spotElement.addEventListener('mouseenter', (e) => showSpotInfo(e, lot.id, spot.id));
                 spotElement.addEventListener('mouseleave', hideSpotInfo);
                 
-                spotElement.style.cursor = spot.occupied ? 'help' : 'default';
+                // Add click event for deletion (only for available spots)
+                if (!spot.occupied) {
+                    spotElement.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        showDeleteSpotModal(lot.id, spot.id, lot.name);
+                    });
+                    spotElement.style.cursor = 'pointer';
+                    spotElement.title = `Click to delete parking spot ${spot.id}`;
+                } else {
+                    spotElement.style.cursor = 'help';
+                    spotElement.title = 'Cannot delete occupied spot - view details on hover';
+                }
                 
                 gridElement.appendChild(spotElement);
-            }
+            });
         }
 
         async function showSpotInfo(event, lotId, spotId) {
@@ -340,25 +394,6 @@
             const pricePerHour = parseFloat(document.getElementById('pricePerHour').value);
             const totalSpots = parseInt(document.getElementById('lotSpots').value);
 
-            if (!name || !address || !pinCode) {
-                alert('Please fill in all required fields');
-                return;
-            }
-
-            if (pricePerHour <= 0) {
-                alert('Price must be greater than 0');
-                return;
-            }
-
-            if (totalSpots < 5 || totalSpots > 50) {
-                alert('Total spots must be between 5 and 50');
-                return;
-            }
-
-            if (parkingLots.some(lot => lot.name.toLowerCase() === name.toLowerCase())) {
-                alert('A parking lot with this name already exists!');
-                return;
-            }
 
             const apiData = {
                 name,
@@ -389,7 +424,7 @@
                     updateDisplay();
                     toggleAddLotForm();
                     
-                    alert(`Parking lot "${name}" created successfully!`);
+                 
                 } else {
                     console.log('❌ API Error:', responseData);
                 }
@@ -400,9 +435,7 @@
 
         function editLot(lotId) {
             const lot = parkingLots.find(l => l.id === lotId);
-            if (!lot) {
-                return alert('Lot not found');
-            }
+           
        
             document.getElementById('editLotId').value = lot.id;
             document.getElementById('editLotName').value = lot.name;
@@ -423,15 +456,9 @@
                 pinCode: document.getElementById('editPinCode').value.trim(),
                 pricePerHour: parseFloat(document.getElementById('editPricePerHour').value),
                 totalSpots: parseInt(document.getElementById('editTotalSpots').value)
-            };
+            };          
 
-            if (!updatedLot.name || !updatedLot.address || !updatedLot.pinCode) {
-                return alert('Please fill in all required fields');
-            }
-
-            if (updatedLot.pricePerHour <= 0) {
-                return alert('Price must be greater than 0');
-            }
+        
 
             try {
                 const response = await fetch(`/api/lots/${lotId}`, {
@@ -451,13 +478,129 @@
                     bootstrap.Modal.getInstance(document.getElementById('editLotModal')).hide();
                     await loadParkingLots();
                     updateDisplay();
-                    alert('Parking lot updated successfully!');
+                  
                 } else {
                     console.log('❌ Update failed:', data.error);
                 }
             } catch (error) {
                 console.log('❌ Network error:', error);
             }
+        }
+
+        
+        let currentDeleteSpot = { lotId: null, spotId: null, lotName: '' };
+        
+        function showDeleteSpotModal(lotId, spotId, lotName) {
+            console.log(`🗑️ Preparing to delete spot ${spotId} from lot ${lotId} (${lotName})`);
+            console.log(`🗑️ Type check - lotId: ${typeof lotId}, spotId: ${typeof spotId}`);
+            
+            // Store current spot info for deletion
+            currentDeleteSpot = { lotId, spotId, lotName };
+            
+            // Update modal content
+            document.getElementById('deleteSpotId').textContent = spotId;
+            document.getElementById('deleteSpotLot').textContent = lotName;
+            document.getElementById('deleteSpotStatus').textContent = 'Available';
+            
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('deleteSpotModal'));
+            modal.show();
+        }
+        
+        async function confirmDeleteSpot() {
+            const { lotId, spotId, lotName } = currentDeleteSpot;
+            
+            if (!lotId || !spotId) {
+                console.error('❌ Invalid spot data for deletion');
+                return;
+            }
+            
+            console.log(`🗑️ Confirming deletion of spot ${spotId} from lot ${lotId}`);
+            console.log(`🗑️ Sending data - lotId: ${lotId} (${typeof lotId}), spotId: ${spotId} (${typeof spotId})`);
+            
+            const requestData = {
+                lotId: parseInt(lotId),
+                spotId: parseInt(spotId)
+            };
+            
+            console.log(`🗑️ Request payload:`, requestData);
+            
+            try {
+                const response = await fetch('/api/admin/delete_parking_spot', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                console.log(`🗑️ Server response:`, data);
+                
+                if (response.ok) {
+                    console.log('✅ Spot deleted successfully:', data.message);
+                    
+                    // Hide the modal
+                    bootstrap.Modal.getInstance(document.getElementById('deleteSpotModal')).hide();
+                    
+                    // Reset current delete spot data
+                    currentDeleteSpot = { lotId: null, spotId: null, lotName: '' };
+                    
+                    // Refresh the parking lots display
+                    await loadParkingLots();
+                    updateDisplay();
+                    
+                    // Show success feedback (optional)
+                    showSuccessMessage(data.message);
+                    
+                } else {
+                    console.log('❌ Delete failed:', data.error);
+                    showErrorMessage(data.error || 'Failed to delete parking spot');
+                }
+                
+            } catch (error) {
+                console.log('❌ Network error:', error);
+                showErrorMessage('Network error occurred while deleting spot');
+            }
+        }
+        
+        function showSuccessMessage(message) {
+            // Simple success message (you can enhance this with toast notifications)
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        function showErrorMessage(message) {
+            // Simple error message (you can enhance this with toast notifications)
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                <i class="fas fa-exclamation-circle me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Auto-remove after 7 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 7000);
         }
 
         document.addEventListener('DOMContentLoaded', function() {

@@ -51,14 +51,7 @@
             const searchType = document.getElementById('searchType').value;
             const query = document.getElementById('searchQuery').value.trim();
             const resultsContainer = document.getElementById('searchResults');        
-            if (!searchType) {
-                alert('Please select a search type');
-                return;
-            }            
-            if (!query) {
-                alert('Please enter a search query');
-                return;
-            }            
+               
             resultsContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
             try {
                 let results = [];

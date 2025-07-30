@@ -22,7 +22,7 @@
                     <div class="col-auto">
                         <div class="users-stats-compact">
                             <div class="stat-item">
-                                <div class="stat-number" id="totalUsers">0</div>
+                                <div id="totalUsers">0</div>
                                 <div class="stat-label">Total Users</div>
                             </div>
                         </div>
@@ -146,7 +146,7 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${index + 1}</td>
-                    <td><span class="user-email">${user.email}</span></td>
+                    <td><span class="user-details">${user.email}</span></td>
                     <td>${user.fullName}</td>
                     <td>
                         <div class="user-details" id="address-${user.id}">
@@ -233,13 +233,11 @@
                 if (response.ok) {
                     await loadUsers(); 
                     const actionText = action === 'delete' ? 'deleted' : `${action}d`;
-                    alert(`User has been ${actionText} successfully!`);
-                } else {
-                    alert(`Failed to ${action} user.`);
-                }
+                   
+                } 
             } catch (error) {
                 console.error(`Error ${action}ing user:`, error);
-                alert(`Error occurred while ${action}ing user.`);
+              
             }
             
             pendingAction = null;
