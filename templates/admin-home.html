@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parking Lots Management</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%23B855C7' d='M135.2 117.4L109.1 192H402.9l-26.1-74.6C372.3 104.6 360.2 96 346.6 96H165.4c-13.6 0-25.7 8.6-30.2 21.4zM39.6 196.8L74.8 96.3C88.3 57.8 124.6 32 165.4 32H346.6c40.8 0 77.1 25.8 90.6 64.3l35.2 100.5c23.2 9.6 39.6 32.5 39.6 59.2V304c0 17.7-14.3 32-32 32H448c0 53-43 96-96 96s-96-43-96-96H256c0 53-43 96-96 96s-96-43-96-96H32c-17.7 0-32-14.3-32-32V256c0-26.7 16.4-49.6 39.6-59.2zM128 288a32 32 0 1 1 0 64 32 32 0 1 1 0-64zm288 32a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z'/></svg>" type="image/svg+xml">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -16,12 +17,12 @@
             --text-dark: #4A4A4A;
         }
 
-        .parking-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(212, 196, 227, 0.3);
-            padding: 30px;
-            margin: 20px 0;
+        body {
+            background: transparent !important;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px;
         }
 
         .section-title {
@@ -46,7 +47,7 @@
         }
 
         .parking-lot {
-            background: rgba(248, 249, 250, 0.8);
+            background: rgba(248, 249, 250, 0.9);
             border: 2px solid var(--light-purple);
             border-radius: 15px;
             padding: 20px;
@@ -79,27 +80,51 @@
             gap: 8px;
         }
 
+        .lot-info {
+            margin-bottom: 15px;
+        }
+
+        .lot-info div {
+            margin-bottom: 5px;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .lot-info div:last-child {
+            margin-bottom: 0;
+        }
+
+        .lot-info i {
+            width: 16px;
+            margin-right: 8px;
+            color: var(--medium-purple);
+        }
+
         .btn-delete-lot {
-            background: #dc3545;
-            border: none;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            cursor: pointer;
+            background: linear-gradient(45deg, var(--primary-purple), var(--medium-purple));
+            border: 2px solid var(--dark-purple);
+            color: #444;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 5px;
+            font-size: 0.85rem;
+            cursor: pointer;
         }
 
         .btn-delete-lot:hover {
-            background: #c82333;
-            transform: scale(1.05);
+            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+            color: #333;
+            transform: translateY(-2px);
         }
 
         .btn-delete-lot:disabled {
-            background: #6c757d;
+            background: linear-gradient(45deg, #6c757d, #5a6268);
+            border: 2px solid #495057;
+            color: #fff;
             cursor: not-allowed;
             opacity: 0.6;
         }
@@ -180,7 +205,7 @@
         }
 
         .legend {
-            background: rgba(232, 213, 240, 0.2);
+            background: rgba(232, 213, 240, 0.3);
             border: 1px solid var(--medium-purple);
             border-radius: 10px;
             padding: 15px;
@@ -202,7 +227,7 @@
         }
 
         .add-lot-form {
-            background: rgba(248, 249, 250, 0.9);
+            background: rgba(248, 249, 250, 0.95);
             border: 2px dashed var(--medium-purple);
             border-radius: 15px;
             padding: 20px;
@@ -242,17 +267,21 @@
         }
 
         .btn-edit-lot {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
+            background: linear-gradient(45deg, var(--primary-purple), var(--medium-purple));
+            border: 2px solid var(--dark-purple);
+            color: #444;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
             cursor: pointer;
             margin-right: 10px;
         }
 
         .btn-edit-lot:hover {
-            background-color: #0056b3;
+            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+            color: #333;
+            transform: translateY(-2px);
         }
 
         /* Tooltip Styles for Spot Information */
@@ -294,7 +323,6 @@
             border-left: 3px solid #ff6b6b;
         }
 
-        /* Update parking spot hover styles */
         .spot-occupied:hover {
             background-color: #a71e2a !important;
             transform: scale(1.1);
@@ -306,104 +334,105 @@
             transform: scale(1.05);
             cursor: default;
         }
+
+        /* Header controls */
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .legend-compact {
+            background: rgba(232, 213, 240, 0.3);
+            border: 1px solid var(--medium-purple);
+            border-radius: 8px;
+            padding: 8px 15px;
+            margin: 0;
+        }
+
+        .legend-compact .d-flex {
+            gap: 15px;
+        }
+
+        .legend-compact .legend-item {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="parking-container">
-            <!-- Debug Panel -->
-            <div id="debug-panel" style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; margin-bottom: 20px; border-radius: 5px;">
-                <h6>Debug Info:</h6>
-                <div id="debug-info">
-                    <p>Lots loaded: <span id="lots-count">0</span></p>
-                    <p>Last action: <span id="last-action">None</span></p>
+    <!-- Header with Add Button and Legend -->
+    <div class="header-controls">
+        <div>
+            <button class="btn btn-add-lot" onclick="toggleAddLotForm()">
+                <i class="fas fa-plus me-2"></i>Add New Lot
+            </button>
+        </div>
+        
+        <div class="legend-compact" id="legend" style="display: none;">
+            <div class="d-flex align-items-center">
+                <div class="legend-item">
+                    <div class="legend-spot spot-available"></div>
+                    <span>Available</span>
                 </div>
-            </div>
-
-            <!-- Header with Add Button -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="section-title">Parking Lots Management</h2>
-                <div>
-                    <button class="btn btn-add-lot" onclick="toggleAddLotForm()">
-                        <i class="fas fa-plus me-2"></i>Add New Lot
-                    </button>
-                </div>
-            </div>
-
-            <!-- Add New Lot Form -->
-            <div id="addLotForm" class="add-lot-form">
-                <h5 class="mb-3">Add New Parking Lot</h5>
-                <form id="lotForm" onsubmit="handleFormSubmit(event)">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label class="form-label">Location Name:</label>
-                            <input type="text" class="form-control" id="lotName" placeholder="Location" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Address:</label>
-                            <input type="text" class="form-control" id="address" placeholder="123 Main Street" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Pin Code:</label>
-                            <input type="text" class="form-control" id="pinCode" placeholder="400010" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Price/Hour (₹):</label>
-                            <input type="number" class="form-control" id="pricePerHour" value="20" min="1" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Maximum Spots:</label>
-                            <input type="number" class="form-control" id="lotSpots" value="10" min="5" max="50" required>
-                        </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button type="submit" class="btn btn-success me-2">
-                                <i class="fas fa-check me-1"></i>Add
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="toggleAddLotForm()">
-                                <i class="fas fa-times me-1"></i>Cancel
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Empty State -->
-            <div id="emptyState" class="empty-state">
-                <i class="fas fa-parking"></i>
-                <h4>No Parking Lots Created Yet</h4>
-                <p>Get started by adding your first parking lot using the "Add New Lot" button above.</p>
-            </div>
-
-            <!-- Parking Lots Container -->
-            <div id="parkingLotsContainer" class="parking-lots-grid" style="display: none;">
-                <!-- Parking lots will be dynamically generated here -->
-            </div>
-
-            <!-- Legend -->
-            <div class="legend" id="legend" style="display: none;">
-                <h6 class="fw-bold mb-3">Legend:</h6>
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="legend-item">
-                            <div class="legend-spot spot-available"></div>
-                            <span>Available Spot</span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="legend-item">
-                            <div class="legend-spot spot-occupied"></div>
-                            <span>Occupied Spot</span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="legend-item">
-                            <i class="fas fa-info-circle text-info me-2"></i>
-                            <span><strong>Click spots to toggle occupancy</strong></span>
-                        </div>
-                    </div>
+                <div class="legend-item">
+                    <div class="legend-spot spot-occupied"></div>
+                    <span>Occupied</span>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Add New Lot Form -->
+    <div id="addLotForm" class="add-lot-form">
+        <h5 class="mb-3">Add New Parking Lot</h5>
+        <form id="lotForm" onsubmit="handleFormSubmit(event)">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label">Location Name:</label>
+                    <input type="text" class="form-control" id="lotName" placeholder="Location" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Address:</label>
+                    <input type="text" class="form-control" id="address" placeholder="123 Main Street" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Pin Code:</label>
+                    <input type="text" class="form-control" id="pinCode" placeholder="400010" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Price/Hour (₹):</label>
+                    <input type="number" class="form-control" id="pricePerHour" value="20" min="1" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Maximum Spots:</label>
+                    <input type="number" class="form-control" id="lotSpots" value="10" min="5" max="50" required>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success me-2">
+                        <i class="fas fa-check me-1"></i>Add
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleAddLotForm()">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state">
+        <i class="fas fa-parking"></i>
+        <h4>No Parking Lots Created Yet</h4>
+        <p>Get started by adding your first parking lot using the "Add New Lot" button above.</p>
+    </div>
+
+    <!-- Parking Lots Container -->
+    <div id="parkingLotsContainer" class="parking-lots-grid" style="display: none;">
+        <!-- Parking lots will be dynamically generated here -->
     </div>
 
     <!-- Edit Lot Modal -->
@@ -450,56 +479,32 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        console.log('🚀 Simple admin-home.html script starting...');
-        
-        // Global state
         let parkingLots = [];
 
-        // Debug helper
-        function updateDebugInfo(action = '') {
-            document.getElementById('lots-count').textContent = parkingLots.length;
-            if (action) document.getElementById('last-action').textContent = action;
-        }
-
-        function debugLog(message, data = null) {
-            const timestamp = new Date().toLocaleTimeString();
-            console.log(`[${timestamp}] 🔧 ${message}`, data || '');
-            updateDebugInfo(message);
-        }
-
-        // Load parking lots
         async function loadParkingLots() {
-            debugLog('🔄 Loading parking lots...');
             try {
                 const response = await fetch('/api/lots');
-                debugLog(`📡 Response status: ${response.status}`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
                 parkingLots = await response.json();
-                debugLog(`✅ Loaded ${parkingLots.length} parking lots`, parkingLots);
-                
+               
             } catch (error) {
-                debugLog(`❌ Failed to load parking lots: ${error.message}`, error);
                 parkingLots = [];
             }
         }
 
-        // Initialize app
         async function initializeApp() {
-            debugLog('🏁 Initializing app...');
             try {
                 await loadParkingLots();
                 updateDisplay();
-                debugLog('✅ App initialized successfully');
             } catch (error) {
-                debugLog(`❌ App initialization failed: ${error.message}`, error);
+                console.log(`❌ App initialization failed: ${error.message}`, error);
             }
         }
 
-        // Update display
         function updateDisplay() {
             const container = document.getElementById('parkingLotsContainer');
             const emptyState = document.getElementById('emptyState');
@@ -517,7 +522,6 @@
             }
         }
 
-        // Render all parking lots
         function renderAllParkingLots() {
             const container = document.getElementById('parkingLotsContainer');
             container.innerHTML = '';
@@ -527,7 +531,6 @@
             });
         }
 
-        // Add lot HTML to DOM
         function addLotToDOM(lot) {
             const container = document.getElementById('parkingLotsContainer');
             const isEmpty = lot.occupiedSpots === 0;
@@ -539,7 +542,7 @@
                     <div class="lot-header">
                         <div class="lot-title">${lot.name}</div>
                         <div class="lot-actions">
-                            <button class="btn btn-primary btn-sm me-2" onclick="editLot(${lot.id})">
+                            <button class="btn-edit-lot" onclick="editLot(${lot.id})">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
                             <button class="btn-delete-lot" 
@@ -552,9 +555,8 @@
                         </div>
                     </div>
                     <div class="lot-info">
-                        <span><i class="fas fa-map-marker-alt"></i> ${lot.address}</span>
-                        <span><i class="fas fa-money-bill"></i> ₹${lot.pricePerHour}/hour</span>
-                        <span class="lot-status ${statusClass}"><i class="fas fa-circle"></i> ${statusText}</span>
+                        <div><i class="fas fa-map-marker-alt"></i> ${lot.address}</div>
+                        <div><i class="fas fa-money-bill"></i> ₹${lot.pricePerHour}/hour</div>
                     </div>
                     <div class="parking-grid" id="parking-grid-${lot.id}"></div>
                 </div>
@@ -563,46 +565,35 @@
             container.insertAdjacentHTML('beforeend', lotHtml);
         }
 
-        // Render parking lot spots
         function renderParkingLot(lot) {
-            // Fix: Changed from lot${lot.id}-grid to parking-grid-${lot.id}
             const gridElement = document.getElementById(`parking-grid-${lot.id}`);
             if (!gridElement) {
-                debugLog(`❌ Grid element not found for lot ${lot.id}`);
                 return;
             }
 
             gridElement.innerHTML = '';
             
-            // Create spots based on totalSpots
             for (let i = 1; i <= lot.totalSpots; i++) {
                 const spot = lot.spots.find(s => s.id === i) || { id: i, occupied: false };
                 const spotElement = document.createElement('div');
                 spotElement.className = `parking-spot ${spot.occupied ? 'spot-occupied' : 'spot-available'}`;
                 spotElement.textContent = spot.occupied ? 'O' : 'A';
                 
-                // Add data attributes for spot information
                 spotElement.setAttribute('data-lot-id', lot.id);
                 spotElement.setAttribute('data-spot-id', spot.id);
                 
-                // Add hover functionality instead of click to toggle
                 spotElement.addEventListener('mouseenter', (e) => showSpotInfo(e, lot.id, spot.id));
                 spotElement.addEventListener('mouseleave', hideSpotInfo);
                 
-                // Make spots non-clickable (read-only)
                 spotElement.style.cursor = spot.occupied ? 'help' : 'default';
                 
                 gridElement.appendChild(spotElement);
             }
-            
-            debugLog(`✅ Rendered ${lot.totalSpots} spots for lot ${lot.id}`);
         }
 
-        // Show spot information on hover
         async function showSpotInfo(event, lotId, spotId) {
             const spotElement = event.target;
             
-            // Only show info for occupied spots
             if (!spotElement.classList.contains('spot-occupied')) {
                 return;
             }
@@ -618,7 +609,6 @@
             }
         }
 
-        // Hide spot information tooltip
         function hideSpotInfo() {
             const tooltip = document.getElementById('spotTooltip');
             if (tooltip) {
@@ -626,9 +616,7 @@
             }
         }
 
-        // Show tooltip with spot information
         function showTooltip(event, spotInfo) {
-            // Remove existing tooltip
             hideSpotInfo();
             
             const tooltip = document.createElement('div');
@@ -667,7 +655,6 @@
             tooltipContent += `</div>`;
             tooltip.innerHTML = tooltipContent;
             
-            // Position tooltip
             const rect = event.target.getBoundingClientRect();
             tooltip.style.position = 'fixed';
             tooltip.style.left = (rect.right + 10) + 'px';
@@ -677,37 +664,27 @@
             document.body.appendChild(tooltip);
         }
 
-        // Remove the old toggle function - spots are now read-only
-        // async function toggleSpot(lotId, spotId) { ... } - REMOVED
-
-        // Delete lot
         async function deleteLot(lotId) {
             if (!confirm('Are you sure you want to delete this parking lot?')) {
                 return;
             }
             
-            debugLog(`🗑️ Deleting lot ${lotId}`);
             try {
                 const response = await fetch(`/api/lots/${lotId}`, { method: 'DELETE' });
                 if (response.ok) {
-                    debugLog('✅ Lot deleted successfully');
+                    console.log('✅ Lot deleted successfully');
                     await loadParkingLots();
                     updateDisplay();
-                    alert('Parking lot deleted successfully!');
                 } else {
                     const error = await response.json();
-                    debugLog(`❌ Failed to delete lot: ${error.error}`);
-                    alert('Failed to delete lot: ' + error.error);
+                    console.log(`❌ Failed to delete lot: ${error.error}`);
                 }
             } catch (error) {
-                debugLog(`❌ Network error: ${error.message}`);
-                alert('Network error: ' + error.message);
+                console.log(`❌ Network error: ${error.message}`);
             }
         }
 
-        // Toggle add lot form
         function toggleAddLotForm() {
-            debugLog('🔄 Toggling add lot form...');
             const form = document.getElementById('addLotForm');
             const isVisible = form.style.display === 'block';
             form.style.display = isVisible ? 'none' : 'block';
@@ -717,27 +694,18 @@
             }
         }
 
-        // Handle form submission
         async function handleFormSubmit(event) {
             event.preventDefault();
-            debugLog('📝 Form submitted');
             await addNewLot();
         }
 
-        // Add new lot
         async function addNewLot() {
-            debugLog('🚀 Starting add new lot process...');
-            
-            // Get form values
             const name = document.getElementById('lotName').value.trim();
             const address = document.getElementById('address').value.trim();
             const pinCode = document.getElementById('pinCode').value.trim();
             const pricePerHour = parseFloat(document.getElementById('pricePerHour').value);
             const totalSpots = parseInt(document.getElementById('lotSpots').value);
 
-            debugLog('📝 Form data:', { name, address, pinCode, pricePerHour, totalSpots });
-
-            // Validation
             if (!name || !address || !pinCode) {
                 alert('Please fill in all required fields');
                 return;
@@ -753,13 +721,11 @@
                 return;
             }
 
-            // Check for duplicate names
             if (parkingLots.some(lot => lot.name.toLowerCase() === name.toLowerCase())) {
                 alert('A parking lot with this name already exists!');
                 return;
             }
 
-            // Prepare API request
             const apiData = {
                 name,
                 address,
@@ -767,8 +733,6 @@
                 pricePerHour,
                 totalSpots
             };
-
-            debugLog('📡 Sending API request:', apiData);
 
             try {
                 const response = await fetch('/api/lots', {
@@ -780,47 +744,32 @@
                     body: JSON.stringify(apiData)
                 });
 
-                debugLog(`📡 Response status: ${response.status}`);
-
                 const responseData = await response.json();
-                debugLog(`📡 Response data:`, responseData);
 
                 if (response.ok) {
-                    debugLog('✅ Lot created successfully!');
-                    
-                    // Clear form
                     document.getElementById('lotForm').reset();
                     document.getElementById('pricePerHour').value = '20';
                     document.getElementById('lotSpots').value = '10';
                     
-                    // Reload data and update display
                     await loadParkingLots();
                     updateDisplay();
                     toggleAddLotForm();
                     
                     alert(`Parking lot "${name}" created successfully!`);
-                    
                 } else {
-                    debugLog('❌ API Error:', responseData);
-                    alert(`Failed to create parking lot: ${responseData.error || 'Unknown error'}`);
+                    console.log('❌ API Error:', responseData);
                 }
-
             } catch (error) {
-                debugLog('❌ Network Error:', error);
-                alert(`Network error: ${error.message}`);
+                console.log('❌ Network Error:', error);
             }
         }
 
-        // Edit lot
         function editLot(lotId) {
-            debugLog(`Opening edit modal for lot ${lotId}`);
             const lot = parkingLots.find(l => l.id === lotId);
             if (!lot) {
-                debugLog('❌ Lot not found:', lotId);
                 return alert('Lot not found');
             }
-            
-            // Fill form fields
+       
             document.getElementById('editLotId').value = lot.id;
             document.getElementById('editLotName').value = lot.name;
             document.getElementById('editLotAddress').value = lot.address;
@@ -828,14 +777,10 @@
             document.getElementById('editPricePerHour').value = lot.pricePerHour;
             document.getElementById('editTotalSpots').value = lot.totalSpots;
 
-            debugLog('✅ Edit form populated with lot data:', lot);
-
-            // Show modal
             const modal = new bootstrap.Modal(document.getElementById('editLotModal'));
             modal.show();
         }
 
-        // Update lot
         async function updateLot() {
             const lotId = document.getElementById('editLotId').value;
             const updatedLot = {
@@ -846,26 +791,15 @@
                 totalSpots: parseInt(document.getElementById('editTotalSpots').value)
             };
 
-            debugLog('📝 Attempting to update lot:', updatedLot);
-
-            // Validation
             if (!updatedLot.name || !updatedLot.address || !updatedLot.pinCode) {
-                debugLog('❌ Validation failed: Missing required fields');
                 return alert('Please fill in all required fields');
             }
 
             if (updatedLot.pricePerHour <= 0) {
-                debugLog('❌ Validation failed: Invalid price');
                 return alert('Price must be greater than 0');
             }
 
-            if (updatedLot.totalSpots < 5 || updatedLot.totalSpots > 50) {
-                debugLog('❌ Validation failed: Invalid number of spots');
-                return alert('Total spots must be between 5 and 50');
-            }
-
             try {
-                debugLog('📡 Sending update request...');
                 const response = await fetch(`/api/lots/${lotId}`, {
                     method: 'PUT',
                     headers: {
@@ -878,41 +812,32 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    debugLog('✅ Lot updated successfully!');
-                    // Close modal
+                    console.log('✅ Lot updated successfully!');
+                    
                     bootstrap.Modal.getInstance(document.getElementById('editLotModal')).hide();
-                    // Reload parking lots and update display
                     await loadParkingLots();
                     updateDisplay();
                     alert('Parking lot updated successfully!');
                 } else {
-                    debugLog('❌ Update failed:', data.error);
-                    alert(data.error || 'Failed to update parking lot');
+                    console.log('❌ Update failed:', data.error);
                 }
             } catch (error) {
-                debugLog('❌ Network error:', error);
-                alert('Network error: ' + error.message);
+                console.log('❌ Network error:', error);
             }
         }
 
-        // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            debugLog('🏁 DOM Content Loaded');
             initializeApp();
             
-            // Auto-refresh every 30 seconds to reflect real-time bookings/releases
             setInterval(async () => {
-                debugLog('🔄 Auto-refreshing parking lots data...');
                 try {
                     await loadParkingLots();
                     updateDisplay();
                 } catch (error) {
                     console.error('Auto-refresh error:', error);
                 }
-            }, 30000); // Refresh every 30 seconds
+            }, 30000);
         });
-
-        debugLog('✅ Script setup complete');
     </script>
 </body>
 </html>

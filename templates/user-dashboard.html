@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vehicle Parking System - User Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%23B855C7' d='M135.2 117.4L109.1 192H402.9l-26.1-74.6C372.3 104.6 360.2 96 346.6 96H165.4c-13.6 0-25.7 8.6-30.2 21.4zM39.6 196.8L74.8 96.3C88.3 57.8 124.6 32 165.4 32H346.6c40.8 0 77.1 25.8 90.6 64.3l35.2 100.5c23.2 9.6 39.6 32.5 39.6 59.2V304c0 17.7-14.3 32-32 32H448c0 53-43 96-96 96s-96-43-96-96H256c0 53-43 96-96 96s-96-43-96-96H32c-17.7 0-32-14.3-32-32V256c0-26.7 16.4-49.6 39.6-59.2zM128 288a32 32 0 1 1 0 64 32 32 0 1 1 0-64zm288 32a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z'/></svg>" type="image/svg+xml">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         :root {
             --primary-purple: #E8D5F0;
@@ -14,6 +16,10 @@
             --accent-purple: #F0E6FF;
             --medium-purple: #E0D0F0;
             --text-dark: #4A4A4A;
+            --chart-green: #28a745;
+            --chart-blue: #007bff;
+            --chart-orange: #fd7e14;
+            --chart-red: #dc3545;
         }
 
         body {
@@ -25,14 +31,14 @@
         .header-section {
             background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
             color: #444;
-            padding: 20px 0;
+            padding: 10px 0;
             box-shadow: 0 2px 10px rgba(212, 196, 227, 0.3);
             margin-bottom: 30px;
         }
 
         .header-title {
-            font-size: 1.8rem;
-            font-weight: 700;
+            font-size: 1.4rem;
+            font-weight: 500;
             margin: 0;
         }
 
@@ -44,12 +50,13 @@
         }
 
         .nav-links a {
-            color: #555;
+            color: black;
             text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 8px;
+            padding: 5px 10px;
+            border-radius: 6px;
             transition: all 0.3s ease;
             font-weight: 500;
+            font-size: 0.9rem;
             cursor: pointer;
         }
 
@@ -65,11 +72,12 @@
 
         .profile-section {
             background: rgba(255, 255, 255, 0.9);
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 5px 15px;
+            border-radius: 20px;
             border: 2px solid var(--light-purple);
             color: var(--text-dark);
             font-weight: 500;
+            font-size: 0.9rem;
         }
 
         .main-content {
@@ -109,6 +117,123 @@
             border-radius: 2px;
         }
 
+        /* Summary Dashboard Styles */
+        .summary-title {
+            color: var(--medium-purple);
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .summary-subtitle {
+            color: #6c757d;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, #fff, #f8f9fa);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--light-purple);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(224, 208, 240, 0.3);
+            border-color: var(--medium-purple);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .chart-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 2px solid var(--light-purple);
+            transition: all 0.3s ease;
+            height: 450px;
+            margin-bottom: 20px;
+        }
+
+        .chart-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-color: var(--medium-purple);
+        }
+
+        .chart-title {
+            color: var(--text-dark);
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light-purple);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .charts-row {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .charts-row .chart-section {
+            flex: 1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 50px;
+            color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+            border-radius: 15px;
+            border: 2px solid #dc3545;
+        }
+
+        /* Other existing styles... */
         .parking-lot {
             background: rgba(248, 249, 250, 0.8);
             border: 2px solid var(--light-purple);
@@ -205,15 +330,6 @@
             margin-bottom: 20px;
         }
 
-        .welcome-section {
-            background: rgba(0, 123, 255, 0.1);
-            border: 2px solid #007bff;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -226,63 +342,9 @@
             margin-bottom: 20px;
         }
 
-        .legend {
-            background: rgba(232, 213, 240, 0.2);
-            border: 1px solid var(--medium-purple);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-        }
+     
+       
 
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-
-        .legend-spot {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            border: 2px solid;
-        }
-
-        .btn-quick-book {
-            background: linear-gradient(45deg, #28a745, #20c997);
-            border: 2px solid #1e7e34;
-            color: white;
-            border-radius: 10px;
-            padding: 12px 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-quick-book:hover {
-            background: linear-gradient(45deg, #218838, #1ea180);
-            transform: translateY(-2px);
-        }
-
-        /* Modal Styles */
-        .modal-content {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
-        .modal-header {
-            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
-            color: #444;
-            border-radius: 15px 15px 0 0;
-            border-bottom: none;
-        }
-
-        .form-control:focus {
-            border-color: var(--medium-purple);
-            box-shadow: 0 0 0 0.2rem rgba(224, 208, 240, 0.25);
-        }
 
         .search-section {
             background: rgba(40, 167, 69, 0.1);
@@ -322,7 +384,30 @@
             color: white;
         }
 
-        @media (max-width: 768px) {
+        /* Modal Styles */
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+            color: #444;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--medium-purple);
+            box-shadow: 0 0 0 0.2rem rgba(224, 208, 240, 0.25);
+        }
+
+        @media (max-width: 968px) {
+            .charts-row {
+                flex-direction: column;
+            }
+            
             .nav-links {
                 font-size: 0.9rem;
             }
@@ -339,37 +424,63 @@
             .parking-lots-grid {
                 grid-template-columns: 1fr;
             }
+
+            .header-title {
+                font-size: 1.2rem;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .profile-section {
+                margin-top: 10px;
+            }
+
+            .chart-section {
+                height: 400px;
+                padding: 20px;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
         }
     </style>
 </head>
 <body>
     <!-- Header Section -->
     <div class="header-section">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center">
+                <!-- Left side - Title -->
+                <div class="col-auto">
                     <h1 class="header-title">
-                        <i class="fas fa-car me-2"></i>User Dashboard
+                        <i class="fas fa-car me-2"></i>Welcome {{user_name}}!
                     </h1>
                 </div>
-                <div class="col-md-6">
-                    <div class="d-flex justify-content-end align-items-center">
-                        <div class="nav-links me-3">
-                            <span class="text-success fw-bold">Welcome {{ user_name }}!</span>
-                            <span class="separator">|</span>
-                            <a onclick="showSection('browse')" id="nav-browse" class="active">Browse Lots</a>
-                            <span class="separator">|</span>
-                            <a onclick="showSection('bookings')" id="nav-bookings">My Bookings</a>
-                            <span class="separator">|</span>
-                            <a onclick="showSection('profile')" id="nav-profile">Profile</a>
-                            <span class="separator">|</span>
-                            <a href="/logout">
-                                <i class="fas fa-sign-out-alt me-1"></i>Logout
-                            </a>
+                
+                <!-- Center - Navigation -->
+                <div class="col-auto">
+                    <div class="nav-links">
+                        <a onclick="showSection('browse')" id="nav-browse" class="active">Home</a>
+                        <span class="separator">|</span>
+                        <a onclick="showSection('bookings')" id="nav-bookings">My Bookings</a>
+                        <span class="separator">|</span>
+                        <a onclick="showSection('summary')" id="nav-summary">Summary</a>
+                    </div>
+                </div>
+                
+                <!-- Right side - Profile and Logout -->
+                <div class="col-auto">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="profile-section" onclick="showProfileModal()" style="cursor: pointer;">
+                            <i class="fas fa-user"></i>
                         </div>
-                        <div class="profile-section">
-                            <i class="fas fa-user me-2"></i>
-                            <span class="fw-bold">{{ user_email }}</span>
+                        
+                        <div class="profile-section" onclick="logout()" style="cursor: pointer;">
+                            <i class="fas fa-sign-out-alt"></i>
                         </div>
                     </div>
                 </div>
@@ -383,29 +494,22 @@
             
             <!-- Browse Lots Section -->
             <div id="browse-section" class="section active">
-                <!-- Welcome Section -->
-                <div class="welcome-section">
-                    <h3><i class="fas fa-parking me-2"></i>Welcome to the Parking System</h3>
-                    <p class="mb-0">Find and book parking spots at various locations. Browse available lots below.</p>
-                </div>
-
                 <!-- Search Section -->
-                <div class="search-section">
-                    <h5><i class="fas fa-search me-2"></i>Search Parking Locations</h5>
+                <div class="mb-4">
+                   
                     <div class="row">
                         <div class="col-md-8">
                             <input type="text" class="form-control" id="searchInput" placeholder="Search by location, pin code...">
                         </div>
                         <div class="col-md-4">
-                            <button class="btn btn-success w-100" onclick="searchParkingLots()">
+                            <button class="btn w-100" style="background-color: var(--medium-purple); color: black; border: none; transition: all 0.3s ease;" onclick="searchParkingLots()" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(111, 66, 193, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                                 <i class="fas fa-search me-2"></i>Search
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section Title -->
-                <h2 class="section-title">Available Parking Lots</h2>
+                
 
                 <!-- Empty State -->
                 <div id="emptyState" class="empty-state">
@@ -418,31 +522,6 @@
                 <!-- Parking Lots Container -->
                 <div id="parkingLotsContainer" class="parking-lots-grid" style="display: none;">
                     <!-- Parking lots will be dynamically generated here -->
-                </div>
-
-                <!-- Legend -->
-                <div class="legend" id="legend" style="display: none;">
-                    <h6 class="fw-bold mb-3">Legend:</h6>
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="legend-item">
-                                <div class="legend-spot spot-available"></div>
-                                <span>Available Spot</span>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="legend-item">
-                                <div class="legend-spot spot-occupied"></div>
-                                <span>Occupied Spot</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="legend-item">
-                                <i class="fas fa-info-circle text-info me-2"></i>
-                                <span><strong>Click available spots to book</strong></span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -482,56 +561,103 @@
                 </div>
             </div>
 
-            <!-- Profile Section -->
-            <div id="profile-section" class="section">
-                <h2 class="section-title">User Profile</h2>
+            <!-- Enhanced Summary Section -->
+            <div id="summary-section" class="section">
                 
-                <div class="row">
-                    <div class="col-md-8 mx-auto">
-                        <div class="card">
-                            <div class="card-body">
-                                <form id="profileForm">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label class="form-label">Full Name</label>
-                                                <input type="text" class="form-control" id="profileName" value="">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label class="form-label">Email</label>
-                                                <input type="email" class="form-control" id="profileEmail" value="" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label class="form-label">Phone Number</label>
-                                                <input type="tel" class="form-control" id="profilePhone" value="">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label class="form-label">Pin Code</label>
-                                                <input type="text" class="form-control" id="profilePinCode" value="">
-                                            </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <div class="mb-3">
-                                                <label class="form-label">Address</label>
-                                                <textarea class="form-control" id="profileAddress" rows="3"></textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="text-center">
-                                        <button type="button" class="btn btn-primary" onclick="updateProfile()">
-                                            <i class="fas fa-save me-2"></i>Update Profile
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+
+                <!-- Loading State -->
+                <div id="summaryLoadingState" class="loading">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <h4 class="mt-3">Loading Your Dashboard...</h4>
+                    <p>Please wait while we fetch your parking statistics.</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="summaryErrorState" class="error-state" style="display: none;">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    <h4 class="mt-3">Unable to Load Dashboard</h4>
+                    <p>There was an error loading your dashboard data.</p>
+                    <button class="btn btn-outline-danger" onclick="loadSummaryDashboard()">
+                        <i class="fas fa-sync-alt me-2"></i>Retry
+                    </button>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="stats-grid" id="summaryStatsGrid" style="display: none;">
+                    <!-- Stats will be loaded here -->
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row" id="summaryChartsContainer" style="display: none;">
+                    <!-- Usage by Location Chart -->
+                    <div class="chart-section">
+                        <h3 class="chart-title">Your Usage by Parking Location</h3>
+                        <div class="chart-container">
+                            <canvas id="usageChart"></canvas>
                         </div>
                     </div>
+
+                    <!-- Monthly Spending Chart -->
+                    <div class="chart-section">
+                        <h3 class="chart-title">Monthly Spending Trends</h3>
+                        <div class="chart-container">
+                            <canvas id="spendingChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user me-2"></i>User Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="profileForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="profileName" value="">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="profileEmail" value="" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="profilePhone" value="">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Pin Code</label>
+                                    <input type="text" class="form-control" id="profilePinCode" value="">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Address</label>
+                                    <textarea class="form-control" id="profileAddress" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="updateProfile()">
+                        <i class="fas fa-save me-2"></i>Update Profile
+                    </button>
                 </div>
             </div>
         </div>
@@ -603,10 +729,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Booking Information:</strong> You will receive a confirmation with spot details. Please arrive within 15 minutes of booking to avoid cancellation.
-                        </div>
+                       
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -629,16 +752,13 @@
                 </div>
                 <div class="modal-body">
                     <div class="text-center mb-3">
-                        <i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                        
                         <h4 class="mt-3">Delete This Booking?</h4>
                     </div>
                     <div id="releaseDetails">
                         <!-- Booking details will be populated here -->
                     </div>
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Warning:</strong> This action will permanently delete your booking from the database and free up the parking spot for other users. This action cannot be undone.
-                    </div>
+                    
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -658,6 +778,15 @@
         let userBookings = [];
         let currentBookingData = {};
         let currentUser = {};
+        let usageChart = null;
+        let spendingChart = null;
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/logout';
+            }
+        }
 
         // Load user profile data
         async function loadUserProfile() {
@@ -740,7 +869,7 @@
             }
         ];
 
-        // Sample booking history
+        // Sample booking history with more data for charts
         const sampleBookings = [
             {
                 id: 1,
@@ -751,7 +880,8 @@
                 endTime: "2024-01-15 14:30:00",
                 duration: 4,
                 cost: 120,
-                status: "completed"
+                status: "completed",
+                month: "January"
             },
             {
                 id: 2,
@@ -759,10 +889,47 @@
                 spotId: 8,
                 vehicleNumber: "TN01AB1234",
                 startTime: "2024-01-16 09:00:00",
-                endTime: null,
+                endTime: "2024-01-16 12:00:00",
                 duration: 3,
                 cost: 120,
-                status: "active"
+                status: "completed",
+                month: "January"
+            },
+            {
+                id: 3,
+                lotName: "Central Mall Parking",
+                spotId: 5,
+                vehicleNumber: "TN01AB1234",
+                startTime: "2024-02-10 11:00:00",
+                endTime: "2024-02-10 15:30:00",
+                duration: 4.5,
+                cost: 135,
+                status: "completed",
+                month: "February"
+            },
+            {
+                id: 4,
+                lotName: "T Nagar Shopping Complex",
+                spotId: 3,
+                vehicleNumber: "TN01AB1234",
+                startTime: "2024-02-20 14:00:00",
+                endTime: "2024-02-20 17:00:00",
+                duration: 3,
+                cost: 75,
+                status: "completed",
+                month: "February"
+            },
+            {
+                id: 5,
+                lotName: "Phoenix MarketCity",
+                spotId: 12,
+                vehicleNumber: "TN01AB1234",
+                startTime: "2024-03-05 10:00:00",
+                endTime: null,
+                duration: 2,
+                cost: 80,
+                status: "active",
+                month: "March"
             }
         ];
 
@@ -780,6 +947,247 @@
                 console.log('Using sample data for demonstration');
                 parkingLots = sampleParkingLots;
             }
+        }
+
+        // Load Summary Dashboard
+        async function loadSummaryDashboard() {
+            showSummaryLoading();
+            
+            try {
+                // Fetch user statistics from API
+                const statsResponse = await fetch('/api/user/stats');
+                if (!statsResponse.ok) throw new Error('Failed to fetch user statistics');
+                const userStats = await statsResponse.json();
+
+                // Fetch user bookings for additional chart data
+                const bookingsResponse = await fetch('/api/user/bookings');
+                if (!bookingsResponse.ok) throw new Error('Failed to fetch user bookings');
+                userBookings = await bookingsResponse.json();
+                
+                displaySummaryStatistics(userStats);
+                displaySummaryCharts(userStats);
+                showSummaryCharts();
+
+            } catch (error) {
+                console.error('Summary dashboard loading error:', error);
+                showSummaryError();
+            }
+        }
+
+        // Show summary loading state
+        function showSummaryLoading() {
+            document.getElementById('summaryLoadingState').style.display = 'block';
+            document.getElementById('summaryErrorState').style.display = 'none';
+            document.getElementById('summaryChartsContainer').style.display = 'none';
+            document.getElementById('summaryStatsGrid').style.display = 'none';
+        }
+
+        // Show summary error state
+        function showSummaryError() {
+            document.getElementById('summaryLoadingState').style.display = 'none';
+            document.getElementById('summaryErrorState').style.display = 'block';
+            document.getElementById('summaryChartsContainer').style.display = 'none';
+            document.getElementById('summaryStatsGrid').style.display = 'none';
+        }
+
+        // Show summary charts
+        function showSummaryCharts() {
+            document.getElementById('summaryLoadingState').style.display = 'none';
+            document.getElementById('summaryErrorState').style.display = 'none';
+            document.getElementById('summaryChartsContainer').style.display = 'flex';
+            document.getElementById('summaryStatsGrid').style.display = 'grid';
+        }
+
+        // Display summary statistics
+        function displaySummaryStatistics(userStats) {
+            const statsData = [
+                {
+                    icon: 'fas fa-calendar-check',
+                    number: userStats.totalBookings,
+                    label: 'Total Bookings',
+                    color: 'var(--chart-blue)'
+                },             
+                {
+                    icon: 'fas fa-car',
+                    number: userStats.activeBookings,
+                    label: 'Active Bookings',
+                    color: 'var(--medium-purple)'
+                },
+                {
+                    icon: 'fas fa-check-circle',
+                    number: userStats.completedBookings,
+                    label: 'Completed',
+                    color: 'var(--chart-green)'
+                }
+            ];
+
+            const statsGrid = document.getElementById('summaryStatsGrid');
+            statsGrid.innerHTML = statsData.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="${stat.icon}" style="color: ${stat.color}"></i>
+                    </div>
+                    <div class="stat-number">${stat.number}</div>
+                    <div class="stat-label">${stat.label}</div>
+                </div>
+            `).join('');
+        }
+
+        // Display summary charts
+        function displaySummaryCharts(userStats) {
+            createUsageChart(userStats.locationUsage);
+            createSpendingChart(userStats.monthlySpending);
+        }
+
+        // Create usage pie chart
+        function createUsageChart(locationUsage) {
+            const ctx = document.getElementById('usageChart').getContext('2d');
+            
+            if (usageChart) {
+                usageChart.destroy();
+            }
+
+            if (!locationUsage || locationUsage.length === 0) {
+                // Show empty state
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#666';
+                ctx.textAlign = 'center';
+                ctx.fillText('No data available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+
+            const colors = ['#28a745', '#007bff', '#fd7e14', '#dc3545', '#6f42c1', '#20c997'];
+            const locations = locationUsage.map(item => item.name);
+            const hours = locationUsage.map(item => item.hours);
+
+            usageChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: locations,
+                    datasets: [{
+                        data: hours,
+                        backgroundColor: colors.slice(0, locations.length),
+                        borderColor: '#fff',
+                        borderWidth: 3,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const hours = context.raw;
+                                    const bookings = locationUsage[context.dataIndex].bookings;
+                                    return [`${context.label}: ${hours} hours`, `${bookings} bookings`];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create spending line chart
+        function createSpendingChart(monthlySpending) {
+            const ctx = document.getElementById('spendingChart').getContext('2d');
+            
+            if (spendingChart) {
+                spendingChart.destroy();
+            }
+
+            if (!monthlySpending || monthlySpending.length === 0) {
+                // Show empty state
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#666';
+                ctx.textAlign = 'center';
+                ctx.fillText('No data available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+
+            const months = monthlySpending.map(item => item.month);
+            const spending = monthlySpending.map(item => item.amount);
+
+            spendingChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Monthly Spending (₹)',
+                        data: spending,
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#007bff',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Spent: ₹${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                },
+                                callback: function(value) {
+                                    return '₹' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         // Initialize the application
@@ -810,23 +1218,29 @@
             // Load section-specific data
             if (sectionName === 'bookings') {
                 loadBookingHistory();
+            } else if (sectionName === 'summary') {
+                loadSummaryDashboard();
             }
+        }
+
+        // Show profile modal
+        function showProfileModal() {
+            updateProfileForm();
+            const modal = new bootstrap.Modal(document.getElementById('profileModal'));
+            modal.show();
         }
 
         // Update the display based on current state
         function updateDisplay() {
             const container = document.getElementById('parkingLotsContainer');
             const emptyState = document.getElementById('emptyState');
-            const legend = document.getElementById('legend');
             
             if (parkingLots.length === 0) {
                 container.style.display = 'none';
                 emptyState.style.display = 'block';
-                legend.style.display = 'none';
             } else {
                 container.style.display = 'grid';
                 emptyState.style.display = 'none';
-                legend.style.display = 'block';
                 renderAllParkingLots();
             }
         }
@@ -877,16 +1291,7 @@
                     <div class="parking-grid" id="lot${lot.id}-grid">
                         ${renderParkingSpots(lot)}
                     </div>
-                    <div class="text-center mt-3">
-                        ${availableSpots > 0 ? 
-                            `<button class="btn btn-success" onclick="showQuickBooking(${lot.id})">
-                                <i class="fas fa-calendar-plus me-2"></i>Quick Book (${availableSpots} available)
-                            </button>` : 
-                            `<button class="btn btn-secondary" disabled>
-                                <i class="fas fa-times me-2"></i>No Spots Available
-                            </button>`
-                        }
-                    </div>
+                   
                 </div>
             `;
             
@@ -1287,9 +1692,7 @@ Please check your internet connection and try again.`);
                     <div class="col-6"><strong>Booking Status:</strong></div>
                     <div class="col-6"><span class="badge ${booking.status === 'active' ? 'bg-success' : 'bg-secondary'}">${booking.status.toUpperCase()}</span></div>
                 </div>
-                <div class="text-center">
-                    <p class="text-muted mb-0">This booking will be permanently removed from the database.</p>
-                </div>
+                
             `;
             
             // Store for deletion
@@ -1337,18 +1740,7 @@ Please check your internet connection and try again.`);
                     // Close modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('releaseModal'));
                     modal.hide();
-                    
-                    alert(`✅ Booking Deleted Successfully!
-
-Booking Details:
-- Location: ${deletedBooking.lotName}
-- Spot: ${deletedBooking.spotId}
-- Vehicle: ${deletedBooking.vehicleNumber}
-
-The parking spot is now ${deletedBooking.spotStatus} for other users.
-Your booking has been permanently removed from the database.
-
-Thank you for using our parking system!`);
+                   
                     
                 } else {
                     // Deletion failed
@@ -1414,7 +1806,6 @@ Please check your internet connection and try again.`);
         // Update profile
         async function updateProfile() {
             const name = document.getElementById('profileName').value.trim();
-            const phone = document.getElementById('profilePhone').value.trim();
             const pinCode = document.getElementById('profilePinCode').value.trim();
             const address = document.getElementById('profileAddress').value.trim();
             
@@ -1424,6 +1815,12 @@ Please check your internet connection and try again.`);
             }
             
             try {
+                // Show loading state
+                const updateButton = document.querySelector('#profileModal .btn-primary');
+                const originalButtonText = updateButton.innerHTML;
+                updateButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+                updateButton.disabled = true;
+                
                 const response = await fetch('/api/user/profile', {
                     method: 'PUT',
                     headers: {
@@ -1449,12 +1846,27 @@ Your profile has been saved to the database.`);
                     
                     // Update current user data
                     currentUser = result.user;
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
+                    modal.hide();
+                    
                 } else {
                     alert(`❌ Error updating profile: ${result.error || 'Unknown error'}`);
                 }
+                
+                // Restore button state
+                updateButton.innerHTML = originalButtonText;
+                updateButton.disabled = false;
+                
             } catch (error) {
                 alert(`❌ Error updating profile: ${error.message}`);
                 console.error('Profile update error:', error);
+                
+                // Restore button state
+                const updateButton = document.querySelector('#profileModal .btn-primary');
+                updateButton.innerHTML = '<i class="fas fa-save me-2"></i>Update Profile';
+                updateButton.disabled = false;
             }
         }
 
@@ -1474,6 +1886,12 @@ Your profile has been saved to the database.`);
                     searchParkingLots();
                 }
             });
+        });
+
+        // Handle window resize for responsive charts
+        window.addEventListener('resize', function() {
+            if (usageChart) usageChart.resize();
+            if (spendingChart) spendingChart.resize();
         });
     </script>
 </body>

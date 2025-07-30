@@ -1064,6 +1064,174 @@ def get_user_bookings():
         print(f"🔧 DEBUG: ERROR in get_user_bookings: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+@bp.route('/api/user/stats', methods=['GET'])
+def get_user_stats():
+    """Get current user's booking statistics for dashboard"""
+    try:
+        # Check if user is logged in
+        if session.get('user_type') != 'user':
+            return jsonify({"error": "User not logged in"}), 401
+        
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({"error": "User session invalid"}), 401
+        
+        # Get all user's reservations
+        reservations = ReserveParkingSpot.query.filter_by(user_id=user_id).all()
+        
+        if not reservations:
+            return jsonify({
+                "totalBookings": 0,
+                "activeBookings": 0,
+                "completedBookings": 0,
+                "totalSpent": 0,
+                "totalHours": 0,
+                "avgCostPerHour": 0,
+                "locationUsage": [],
+                "monthlySpending": [],
+                "mostUsedLocation": "N/A",
+                "avgDuration": "0h 0m",
+                "favoriteTimeSlot": "N/A",
+                "lastBooking": "No bookings yet",
+                "thisMonthBookings": 0
+            })
+        
+        from collections import defaultdict
+        from datetime import datetime, timedelta
+        import calendar
+        
+        current_time = datetime.utcnow()
+        current_month = current_time.month
+        current_year = current_time.year
+        
+        # Initialize statistics
+        total_bookings = len(reservations)
+        active_count = 0
+        completed_count = 0
+        total_spent = 0
+        total_hours = 0
+        location_usage = defaultdict(lambda: {"count": 0, "hours": 0, "spent": 0})
+        monthly_spending = defaultdict(float)
+        time_slot_usage = defaultdict(int)
+        this_month_count = 0
+        durations = []
+        
+        for reservation in reservations:
+            # Get lot information
+            spot = ParkingSpot.query.get(reservation.spot_id)
+            lot = ParkingLot.query.get(spot.lot_id) if spot else None
+            
+            if not lot:
+                continue
+            
+            # Determine status
+            expected_end = reservation.leaving_timestamp
+            actual_end = reservation.leaving_timestamp
+            
+            # If leaving_timestamp hasn't been updated from original expected time, it's still active
+            is_active = (abs((expected_end - actual_end).total_seconds()) < 60) and (current_time < expected_end)
+            
+            if is_active:
+                active_count += 1
+                duration_hours = (current_time - reservation.parking_timestamp).total_seconds() / 3600
+            else:
+                completed_count += 1
+                duration_hours = (actual_end - reservation.parking_timestamp).total_seconds() / 3600
+            
+            cost = duration_hours * reservation.parking_cost_per_unit_time
+            total_spent += cost
+            total_hours += duration_hours
+            durations.append(duration_hours)
+            
+            # Location usage
+            location_usage[lot.prime_location_name]["count"] += 1
+            location_usage[lot.prime_location_name]["hours"] += duration_hours
+            location_usage[lot.prime_location_name]["spent"] += cost
+            
+            # Monthly spending
+            booking_month = reservation.parking_timestamp.strftime('%Y-%m')
+            monthly_spending[booking_month] += cost
+            
+            # Time slot analysis (hour of day)
+            hour = reservation.parking_timestamp.hour
+            if 6 <= hour < 12:
+                time_slot_usage["Morning (6-12)"] += 1
+            elif 12 <= hour < 18:
+                time_slot_usage["Afternoon (12-18)"] += 1
+            elif 18 <= hour <= 23:
+                time_slot_usage["Evening (18-24)"] += 1
+            else:
+                time_slot_usage["Night (0-6)"] += 1
+            
+            # This month bookings
+            if (reservation.parking_timestamp.month == current_month and 
+                reservation.parking_timestamp.year == current_year):
+                this_month_count += 1
+        
+        # Calculate averages and insights
+        avg_cost_per_hour = (total_spent / total_hours) if total_hours > 0 else 0
+        
+        # Most used location
+        most_used_location = max(location_usage.items(), key=lambda x: x[1]["count"])[0] if location_usage else "N/A"
+        
+        # Average duration
+        avg_duration_hours = sum(durations) / len(durations) if durations else 0
+        avg_hours = int(avg_duration_hours)
+        avg_minutes = int((avg_duration_hours - avg_hours) * 60)
+        avg_duration_str = f"{avg_hours}h {avg_minutes}m"
+        
+        # Favorite time slot
+        favorite_time_slot = max(time_slot_usage.items(), key=lambda x: x[1])[0] if time_slot_usage else "N/A"
+        
+        # Last booking
+        latest_reservation = max(reservations, key=lambda x: x.parking_timestamp)
+        last_booking_date = latest_reservation.parking_timestamp.strftime('%d %b %Y')
+        
+        # Prepare location usage for charts
+        location_chart_data = [
+            {
+                "name": location,
+                "bookings": data["count"],
+                "hours": round(data["hours"], 1),
+                "spent": round(data["spent"], 2)
+            }
+            for location, data in location_usage.items()
+        ]
+        
+        # Prepare monthly spending for charts (last 6 months)
+        monthly_chart_data = []
+        for i in range(5, -1, -1):
+            month_date = current_time.replace(day=1) - timedelta(days=30*i)
+            month_key = month_date.strftime('%Y-%m')
+            month_name = month_date.strftime('%b %Y')
+            spending = monthly_spending.get(month_key, 0)
+            monthly_chart_data.append({
+                "month": month_name,
+                "amount": round(spending, 2)
+            })
+        
+        stats = {
+            "totalBookings": total_bookings,
+            "activeBookings": active_count,
+            "completedBookings": completed_count,
+            "totalSpent": round(total_spent, 2),
+            "totalHours": round(total_hours, 1),
+            "avgCostPerHour": round(avg_cost_per_hour, 2),
+            "locationUsage": location_chart_data,
+            "monthlySpending": monthly_chart_data,
+            "mostUsedLocation": most_used_location,
+            "avgDuration": avg_duration_str,
+            "favoriteTimeSlot": favorite_time_slot,
+            "lastBooking": last_booking_date,
+            "thisMonthBookings": this_month_count
+        }
+        
+        return jsonify(stats)
+        
+    except Exception as e:
+        print(f"🔧 DEBUG: ERROR in get_user_stats: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 @bp.route('/api/delete_parking_spot', methods=['DELETE'])
 def delete_parking_spot():
     """Delete a parking booking and free up the spot"""
