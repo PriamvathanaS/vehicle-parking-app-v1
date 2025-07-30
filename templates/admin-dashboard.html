@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Parking System - Admin Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%23B855C7' d='M135.2 117.4L109.1 192H402.9l-26.1-74.6C372.3 104.6 360.2 96 346.6 96H165.4c-13.6 0-25.7 8.6-30.2 21.4zM39.6 196.8L74.8 96.3C88.3 57.8 124.6 32 165.4 32H346.6c40.8 0 77.1 25.8 90.6 64.3l35.2 100.5c23.2 9.6 39.6 32.5 39.6 59.2V304c0 17.7-14.3 32-32 32H448c0 53-43 96-96 96s-96-43-96-96H256c0 53-43 96-96 96s-96-43-96-96H32c-17.7 0-32-14.3-32-32V256c0-26.7 16.4-49.6 39.6-59.2zM128 288a32 32 0 1 1 0 64 32 32 0 1 1 0-64zm288 32a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z'/></svg>" type="image/svg+xml">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-purple: #E8D5F0;
+            --light-purple: #F5F0FF;
+            --dark-purple: #D4C4E3;
+            --accent-purple: #F0E6FF;
+            --medium-purple: #E0D0F0;
+            --text-dark: #4A4A4A;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--light-purple) 0%, var(--accent-purple) 50%, var(--primary-purple) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+      .header-section {
+    background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+    color: #444;
+    padding: 10px 0; /* Changed from 20px 0 */
+    box-shadow: 0 2px 10px rgba(212, 196, 227, 0.3);
+    margin-bottom: 30px;
+}
+
+        .header-title {
+    font-size: 1.4rem; /* Changed from 1.8rem */
+    font-weight: 500;
+    margin: 0;
+}
+
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+       .nav-links a {
+    color:black;
+    text-decoration: none;
+    padding: 5px 10px; /* Changed from 8px 15px */
+    border-radius: 6px; /* Changed from 8px */
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.9rem; /* Added smaller font size */
+}
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: #333;
+        }
+
+        .nav-links a.active {
+            background: rgba(255, 255, 255, 0.4);
+            color: #222;
+            font-weight: 600;
+        }
+
+        .nav-links .separator {
+            color: #666;
+            margin: 0 5px;
+        }
+.nav-links a.logout-icon {
+    color: black;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+.nav-links a.logout-icon:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #333;
+}
+      .profile-section {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 5px 15px; /* Changed from 10px 20px */
+    border-radius: 20px; /* Changed from 25px */
+    border: 2px solid var(--light-purple);
+    color: var(--text-dark);
+    font-weight: 500;
+    font-size: 0.9rem; /* Added smaller font size */
+}
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(212, 196, 227, 0.3);
+            padding: 30px;
+            margin: 0 20px;
+        }
+
+        .section-title {
+            color: var(--dark-purple);
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--medium-purple);
+            border-radius: 2px;
+        }
+
+        .tab-content-section {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .parking-lot {
+            background: rgba(248, 249, 250, 0.8);
+            border: 2px solid var(--light-purple);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+            position: relative;
+            height: 100%;
+        }
+
+        .parking-lot:hover {
+            transform: translateY(-2px);
+        }
+
+        .lot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .lot-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        .lot-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-delete-lot {
+            background: #dc3545;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-delete-lot:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .btn-delete-lot:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-delete-lot:disabled:hover {
+            transform: none;
+            background: #6c757d;
+        }
+
+        .lot-status {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .status-red {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .status-green {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .status-orange {
+            color: #fd7e14;
+            font-weight: 600;
+        }
+
+        .parking-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            max-width: 100%;
+            justify-content: center;
+        }
+
+        .parking-spot {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .spot-available {
+            background-color: #28a745;
+            border-color: #1e7e34;
+            color: white;
+        }
+
+        .spot-occupied {
+            background-color: #dc3545;
+            border-color: #c82333;
+            color: white;
+        }
+
+        .spot-available:hover {
+            background-color: #218838;
+            transform: scale(1.1);
+        }
+
+        .spot-occupied:hover {
+            background-color: #c82333;
+            transform: scale(1.1);
+        }
+
+        .btn-add-lot {
+            background: linear-gradient(45deg, var(--primary-purple), var(--medium-purple));
+            border: 2px solid var(--dark-purple);
+            color: #444;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-lot:hover {
+            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+            color: #333;
+            transform: translateY(-2px);
+        }
+
+        .legend {
+            background: rgba(232, 213, 240, 0.2);
+            border: 1px solid var(--medium-purple);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .legend-spot {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+
+        .add-lot-form {
+            background: rgba(248, 249, 250, 0.9);
+            border: 2px dashed var(--medium-purple);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .form-control {
+            border: 2px solid var(--light-purple);
+            border-radius: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-control:focus {
+            border-color: var(--medium-purple);
+            box-shadow: 0 0 0 0.2rem rgba(232, 213, 240, 0.25);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dark);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--medium-purple);
+            margin-bottom: 20px;
+        }
+
+        .empty-state h4 {
+            color: var(--dark-purple);
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+        }
+
+        .confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            margin: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .clear-data-section {
+            background: rgba(255, 236, 236, 0.8);
+            border: 2px solid #ffcccb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .btn-clear-data {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-clear-data:hover {
+            background: #c82333;
+        }
+
+        /* Fix for side-by-side parking lots */
+        .parking-lots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                font-size: 0.9rem;
+            }
+            
+            .parking-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .main-content {
+                margin: 0 10px;
+                padding: 20px;
+            }
+
+            .lot-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .parking-lots-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1199px) {
+            .parking-lots-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .parking-lots-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+  
+<div class="header-section">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+          
+            <div class="col-auto">
+                <h1 class="header-title">
+                    <i class="fas fa-car me-2"></i>Welcome Admin!
+                </h1>
+            </div>
+       
+            <div class="col-auto">
+                <div class="nav-links">
+                    <a href="#" onclick="showSection('home')" id="nav-home" class="active">Home</a>
+                    <span class="separator">|</span>
+                    <a href="#" onclick="showSection('users')" id="nav-users">Users</a>
+                    <span class="separator">|</span>
+                    <a href="#" onclick="showSection('search')" id="nav-search">Search</a>
+                    <span class="separator">|</span>
+                    <a href="#" onclick="showSection('summary')" id="nav-summary">Summary</a>
+                </div>
+            </div>
+            
+          
+            <div class="col-auto">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="profile-section">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    
+                    <div class="profile-section" onclick="logout()" style="cursor: pointer;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+     
+           
+<div id="home-content" class="tab-content-section">
+    <div id="parking-iframe-container" style="width: 100%; height: 80vh;">
+        <iframe id="parking-iframe" 
+                src="" 
+                style="width: 100%; height: 100%; border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"
+                onload="handleParkingIframeLoad()">
+        </iframe>
+    </div>
+    
+   
+    <div id="parking-loading" class="text-center" style="padding: 50px;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading Parking Management...</p>
+    </div>
+</div>
+
+<!-- Users Tab Content -->
+<div id="users-content" class="tab-content-section" style="display: none;">
+    <div id="users-iframe-container" style="width: 100%; height: 80vh;">
+        <iframe id="users-iframe" 
+                src="" 
+                style="width: 100%; height: 100%; border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"
+                onload="handleUsersIframeLoad()">
+        </iframe>
+    </div>
+    
+    <!-- Loading state for users -->
+    <div id="users-loading" class="text-center" style="padding: 50px;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading Users Management...</p>
+    </div>
+</div>
+
+     <!-- Search Tab Content -->
+<div id="search-content" class="tab-content-section" style="display: none;">
+    <div id="search-iframe-container" style="width: 100%; height: 80vh;">
+        <iframe id="search-iframe" 
+                src="" 
+                style="width: 100%; height: 100%; border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"
+                onload="handleSearchIframeLoad()">
+        </iframe>
+    </div>
+    
+    <!-- Loading state for search -->
+    <div id="search-loading" class="text-center" style="padding: 50px;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading Search Module...</p>
+    </div>
+</div>
+<!-- Add this HTML section after the Search Tab Content (around line 380) in your admin-dashboard.html -->
+
+<!-- Summary Tab Content -->
+<div id="summary-content" class="tab-content-section" style="display: none;">
+    <div id="summary-iframe-container" style="width: 100%; height: 80vh;">
+        <iframe id="summary-iframe" 
+                src="" 
+                style="width: 100%; height: 100%; border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"
+                onload="handleSummaryIframeLoad()">
+        </iframe>
+    </div>
+    
+    <!-- Loading state for summary -->
+    <div id="summary-loading" class="text-center" style="padding: 50px;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading Summary Dashboard...</p>
+    </div>
+</div>
+    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+               
+
+
+ // Navigation functions
+// Navigation functions
+function showSection(section) {
+    // Hide all tab contents
+    const allTabs = document.querySelectorAll('.tab-content-section');
+    allTabs.forEach(tab => tab.style.display = 'none');
+    
+    // Remove active class from all nav links
+    const allNavLinks = document.querySelectorAll('.nav-links a');
+    allNavLinks.forEach(link => link.classList.remove('active'));
+    
+    // Show selected tab content
+    const targetContent = document.getElementById(section + '-content');
+    if (targetContent) {
+        targetContent.style.display = 'block';
+        
+       // Special handling for different sections
+if (section === 'home') {
+    loadHomePage();
+} else if (section === 'users') {
+    loadUsersPage();
+}else if (section==='search'){
+    loadSearchPage();
+}
+    }
+    
+    // Add active class to selected nav link
+    const targetNav = document.getElementById('nav-' + section);
+    if (targetNav) {
+        targetNav.classList.add('active');
+    }
+}
+
+// Load users page
+function loadUsersPage() {
+    const iframe = document.getElementById('users-iframe');
+    const loadingDiv = document.getElementById('users-loading');
+    const iframeContainer = document.getElementById('users-iframe-container');
+    
+    // Show loading state
+    loadingDiv.style.display = 'block';
+    iframeContainer.style.display = 'none';
+    
+    // Load the admin users route in iframe
+    iframe.src = '/admin/users';
+}
+
+// Handle iframe load completion
+function handleUsersIframeLoad() {
+    const loadingDiv = document.getElementById('users-loading');
+    const iframeContainer = document.getElementById('users-iframe-container');
+    
+    // Hide loading and show iframe
+    loadingDiv.style.display = 'none';
+    iframeContainer.style.display = 'block';
+}
+// Load users content dynamically
+// Load parking page
+function loadHomePage() {
+    const iframe = document.getElementById('parking-iframe');
+    const loadingDiv = document.getElementById('parking-loading');
+    const iframeContainer = document.getElementById('parking-iframe-container');
+    
+    // Show loading state
+    loadingDiv.style.display = 'block';
+    iframeContainer.style.display = 'none';
+    
+    // Load the admin parking route in iframe
+    iframe.src = '/admin/home';
+}
+// Add these JavaScript functions to your admin-dashboard.html script section (around line 450)
+
+// Load summary page
+function loadSummaryPage() {
+    const iframe = document.getElementById('summary-iframe');
+    const loadingDiv = document.getElementById('summary-loading');
+    const iframeContainer = document.getElementById('summary-iframe-container');
+    
+    // Show loading state
+    loadingDiv.style.display = 'block';
+    iframeContainer.style.display = 'none';
+    
+    // Load the admin summary route in iframe
+    iframe.src = '/admin/summary';
+}
+
+// Handle iframe load completion for summary
+function handleSummaryIframeLoad() {
+    const loadingDiv = document.getElementById('summary-loading');
+    const iframeContainer = document.getElementById('summary-iframe-container');
+    
+    // Hide loading and show iframe
+    loadingDiv.style.display = 'none';
+    iframeContainer.style.display = 'block';
+}
+
+// Update the showSection function to handle summary
+// Replace the existing showSection function with this updated version:
+function showSection(section) {
+    // Hide all tab contents
+    const allTabs = document.querySelectorAll('.tab-content-section');
+    allTabs.forEach(tab => tab.style.display = 'none');
+    
+    // Remove active class from all nav links
+    const allNavLinks = document.querySelectorAll('.nav-links a');
+    allNavLinks.forEach(link => link.classList.remove('active'));
+    
+    // Show selected tab content
+    const targetContent = document.getElementById(section + '-content');
+    if (targetContent) {
+        targetContent.style.display = 'block';
+        
+        // Special handling for different sections
+        if (section === 'home') {
+            loadHomePage();
+        } else if (section === 'users') {
+            loadUsersPage();
+        } else if (section === 'search') {
+            loadSearchPage();
+        } else if (section === 'summary') {
+            loadSummaryPage();
+        }
+    }
+    
+    // Add active class to selected nav link
+    const targetNav = document.getElementById('nav-' + section);
+    if (targetNav) {
+        targetNav.classList.add('active');
+    }
+}
+// Handle iframe load completion for parking
+function handleParkingIframeLoad() {
+    const loadingDiv = document.getElementById('parking-loading');
+    const iframeContainer = document.getElementById('parking-iframe-container');
+    
+    // Hide loading and show iframe
+    loadingDiv.style.display = 'none';
+    iframeContainer.style.display = 'block';
+}
+function loadSearchPage() {
+    const iframe = document.getElementById('search-iframe');
+    const loadingDiv = document.getElementById('search-loading');
+    const iframeContainer = document.getElementById('search-iframe-container');
+    
+    // Show loading state
+    loadingDiv.style.display = 'block';
+    iframeContainer.style.display = 'none';
+    
+    // Load the admin parking route in iframe
+    iframe.src = '/admin/search';
+}
+
+// Handle iframe load completion for parking
+function handleSearchIframeLoad() {
+    const loadingDiv = document.getElementById('search-loading');
+    const iframeContainer = document.getElementById('search-iframe-container');
+    
+    // Hide loading and show iframe
+    loadingDiv.style.display = 'none';
+    iframeContainer.style.display = 'block';
+}
+async function loadUsersContent() {
+    const loadingDiv = document.getElementById('users-loading');
+    const contentDiv = document.getElementById('users-dynamic-content');
+    
+    // Show loading state
+    loadingDiv.style.display = 'block';
+    contentDiv.style.display = 'none';
+    
+    try {
+        // Fetch the user.html content
+        const response = await fetch('/admin-user.html');
+        if (response.ok) {
+            const htmlContent = await response.text();
+            
+            // Extract the body content from user.html
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, 'text/html');
+            const bodyContent = doc.body.innerHTML;
+            
+            // Insert the content
+            contentDiv.innerHTML = bodyContent;
+            
+            // Execute any scripts from user.html
+            const scripts = contentDiv.querySelectorAll('script');
+            scripts.forEach(script => {
+                const newScript = document.createElement('script');
+                newScript.textContent = script.textContent;
+                document.head.appendChild(newScript);
+            });
+            
+            // Hide loading and show content
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+        } else {
+            throw new Error('Failed to load users page');
+        }
+    } catch (error) {
+        console.error('Error loading users content:', error);
+        contentDiv.innerHTML = `
+            <div class="text-center text-danger mt-5">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem;"></i>
+                <h4>Failed to Load Users Management</h4>
+                <p>Unable to load the users management page. Please try again.</p>
+                <button class="btn btn-primary" onclick="loadUsersContent()">
+                    <i class="fas fa-retry me-2"></i>Retry
+                </button>
+            </div>
+        `;
+        loadingDiv.style.display = 'none';
+        contentDiv.style.display = 'block';
+    }
+}function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        window.location.href = '/logout';
+    }
+}
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+    // Load home page by default
+    showSection('home');
+});
+
+
+
+    </script>
+</body>
+</html>

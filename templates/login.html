@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Vehicle Parking System</title>
+ <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%23B855C7' d='M135.2 117.4L109.1 192H402.9l-26.1-74.6C372.3 104.6 360.2 96 346.6 96H165.4c-13.6 0-25.7 8.6-30.2 21.4zM39.6 196.8L74.8 96.3C88.3 57.8 124.6 32 165.4 32H346.6c40.8 0 77.1 25.8 90.6 64.3l35.2 100.5c23.2 9.6 39.6 32.5 39.6 59.2V304c0 17.7-14.3 32-32 32H448c0 53-43 96-96 96s-96-43-96-96H256c0 53-43 96-96 96s-96-43-96-96H32c-17.7 0-32-14.3-32-32V256c0-26.7 16.4-49.6 39.6-59.2zM128 288a32 32 0 1 1 0 64 32 32 0 1 1 0-64zm288 32a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z'/></svg>" type="image/svg+xml">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-purple: #E8D5F0;
+            --light-purple: #F5F0FF;
+            --dark-purple: #D4C4E3;
+            --accent-purple: #F0E6FF;
+            --medium-purple: #E0D0F0;
+            --text-dark: #4A4A4A;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--light-purple) 0%, var(--accent-purple) 50%, var(--primary-purple) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+        }
+
+        /* Background image on sides only */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('static/shutterstock_540175210-BW.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 1; /* Adjust transparency */
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        /* Mask to hide background image behind the form */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+        rgba(245, 240, 255, 0.7) 0%, 
+        rgba(240, 230, 255, 0.7) 50%, 
+        rgba(232, 213, 240, 0.7) 100%);
+    z-index: -1;
+    pointer-events: none;
+        }
+
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(212, 196, 227, 0.4);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            max-width: 650px; /* Increased width for two columns */
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-container {
+            padding: 40px;
+            position: relative;
+        }
+
+        .header-section {
+            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+            color: #444;
+            text-align: center;
+            padding: 20px 20px;
+            position: relative;
+        }
+
+        .header-section h2 {
+            font-size: 2rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .parking-icon {
+            font-size: 3rem;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .form-title {
+            color: var(--dark-purple);
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .form-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: var(--medium-purple);
+            border-radius: 2px;
+        }
+
+        .form-label {
+            color: black;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        .form-control {
+            border: 2px solid var(--dark-purple);
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            transition: border-color 0.3s ease;
+            position: relative;
+        }
+
+        .form-control:focus {
+            border-color: var(--medium-purple);
+            box-shadow: 0 0 0 0.2rem rgba(232, 213, 240, 0.35);
+            background: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-purple), var(--medium-purple));
+            border: 2px solid var(--dark-purple);
+            color: #444;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+            color: #333;
+            transform: translateY(-2px);
+        }
+
+        .toggle-link {
+            color: black;
+            text-decoration: none;
+            font-weight: 500;
+            text-align: center;
+            display: block;
+            margin-top: 20px;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .toggle-link:hover {
+            color: var(--dark-purple);
+            text-decoration: underline;
+        }
+
+        .admin-notice {
+            background: rgba(232, 213, 240, 0.3);
+            border: 1px solid var(--medium-purple);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .admin-notice i {
+            color: var(--medium-purple);
+            margin-right: 8px;
+        }
+
+        .d-none {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        /* Flash Messages Styling */
+        .flash-messages {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .alert {
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: none;
+            margin-bottom: 10px;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        /* Quick Access Info Box */
+        .quick-access {
+            background: rgba(232, 213, 240, 0.2);
+            border: 1px solid var(--medium-purple);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+        }
+
+        .quick-access h6 {
+            color: var(--dark-purple);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .quick-access .credential-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .quick-access .credential-label {
+            font-weight: 500;
+        }
+
+        .quick-access .credential-value {
+            font-family: monospace;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        /* Two Column Form Styles */
+        .two-column-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .form-column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-column:first-child {
+            border-right: 1px solid var(--light-purple);
+            padding-right: 15px;
+        }
+
+        .form-column:last-child {
+            padding-left: 15px;
+        }
+
+        .text-center .btn-register {
+            max-width: 300px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .two-column-form {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .form-column:first-child {
+                border-right: none;
+                padding-right: 0;
+            }
+
+            .form-column:last-child {
+                padding-left: 0;
+            }
+            
+            .auth-wrapper {
+                max-width: 500px;
+            }
+            
+            body::after {
+                width: 520px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .form-container {
+                padding: 30px 25px;
+            }
+            
+            .header-section h2 {
+                font-size: 1.8rem;
+            }
+            
+            .form-title {
+                font-size: 1.5rem;
+            }
+
+            .flash-messages {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
+                        {% if category == 'success' %}
+                            <i class="fas fa-check-circle me-2"></i>
+                        {% elif category == 'error' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle me-2"></i>
+                        {% endif %}
+                        <strong>{{ message }}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="main-container">
+        <div class="auth-wrapper">
+            <!-- Header Section -->
+            <div class="header-section">
+                <i class="fas fa-car parking-icon"></i>
+                <h2>Vehicle Parking System</h2>
+            </div>
+
+            <!-- Form Container -->
+            <div class="form-container">
+                
+                <!-- Login Form -->
+                <div id="loginForm">
+                   
+                    <form method="POST" action="/login">
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Registered Email ID:
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Password:
+                            </label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </button>
+                    </form>
+
+                    <a href="#" class="toggle-link" onclick="toggleForm()">
+                        <i class="fas fa-user-plus me-1"></i>Don't have an account? Create one!
+                    </a>
+                </div>
+
+                <!-- Signup Form -->
+                <div id="signupForm" class="d-none">
+                    
+                    <form method="POST" action="/register">
+                        
+                        <div class="two-column-form">
+                            <!-- Left Column -->
+                            <div class="form-column">
+                                <div class="mb-3">
+                                    <label for="signup_email" class="form-label">
+                                        <i class="fas fa-envelope me-2"></i>Email ID (Username):
+                                    </label>
+                                    <input type="email" class="form-control" id="signup_email" name="email" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="signup_password" class="form-label">
+                                        <i class="fas fa-lock me-2"></i>Password:
+                                    </label>
+                                    <input type="password" class="form-control" id="signup_password" name="password" 
+                                           minlength="6" required>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="form-column">
+                                <div class="mb-3">
+                                    <label for="fullname" class="form-label">
+                                        <i class="fas fa-user me-2"></i>Full Name:
+                                    </label>
+                                    <input type="text" class="form-control" id="fullname" name="fullname" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="pincode" class="form-label">
+                                        <i class="fas fa-map-pin me-2"></i>Pin Code:
+                                    </label>
+                                    <input type="text" class="form-control" id="pincode" name="pincode" 
+                                           pattern="[0-9]{6}" maxlength="6" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address field spanning full width -->
+                        <div class="mb-3">
+                            <label for="address" class="form-label">
+                                <i class="fas fa-map-marker-alt me-2"></i>Address:
+                            </label>
+                            <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+                        </div>
+
+                        <!-- Button Container -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-register">
+                                <i class="fas fa-user-plus me-2"></i>Register
+                            </button>
+                        </div>
+                    </form>
+
+                    <a href="#" class="toggle-link" onclick="toggleForm()">
+                        <i class="fas fa-sign-in-alt me-1"></i>Already have an account? Login here!
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Form toggle functionality
+        function toggleForm() {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            
+            if (loginForm.classList.contains('d-none')) {
+                // Show login form
+                signupForm.classList.add('d-none');
+                loginForm.classList.remove('d-none');
+                loginForm.classList.add('fade-in');
+                
+                // Clear signup form
+                document.getElementById('signupForm').querySelectorAll('input, textarea').forEach(input => {
+                    input.value = '';
+                });
+            } else {
+                // Show signup form
+                loginForm.classList.add('d-none');
+                signupForm.classList.remove('d-none');
+                signupForm.classList.add('fade-in');
+                
+                // Clear login form
+                document.getElementById('loginForm').querySelectorAll('input').forEach(input => {
+                    input.value = '';
+                });
+            }
+        }
+
+        // Auto-dismiss flash messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000); // 5 seconds
+            });
+        });
+
+        // Quick fill admin credentials (for testing only)
+        function fillAdminCredentials() {
+            document.getElementById('email').value = 'admin@gmail.com';
+            document.getElementById('password').value = 'Admin@123';
+        }
+
+        // Add double-click handler to the quick access box for easy testing
+        document.addEventListener('DOMContentLoaded', function() {
+            const quickAccess = document.querySelector('.quick-access');
+            if (quickAccess) {
+                quickAccess.addEventListener('dblclick', function() {
+                    fillAdminCredentials();
+                    // Add visual feedback
+                    this.style.background = 'rgba(40, 167, 69, 0.1)';
+                    setTimeout(() => {
+                        this.style.background = 'rgba(232, 213, 240, 0.2)';
+                    }, 1000);
+                });
+                
+                // Add tooltip
+                quickAccess.title = 'Double-click to auto-fill admin credentials';
+            }
+        });
+
+        // Form validation enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pin code validation
+            const pincodeInput = document.getElementById('pincode');
+            if (pincodeInput) {
+                pincodeInput.addEventListener('input', function(e) {
+                    // Only allow numbers
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    
+                    // Limit to 6 digits
+                    if (this.value.length > 6) {
+                        this.value = this.value.slice(0, 6);
+                    }
+                });
+            }
+
+            // Password strength indicator (optional)
+            const passwordInput = document.getElementById('signup_password');
+            if (passwordInput) {
+                passwordInput.addEventListener('input', function(e) {
+                    const password = this.value;
+                    let strength = 0;
+                    
+                    if (password.length >= 6) strength++;
+                    if (password.match(/[a-z]+/)) strength++;
+                    if (password.match(/[A-Z]+/)) strength++;
+                    if (password.match(/[0-9]+/)) strength++;
+                    if (password.match(/[^A-Za-z0-9]+/)) strength++;
+                    
+                    // Update border color based on strength
+                    if (strength < 2) {
+                        this.style.borderColor = '#dc3545';
+                    } else if (strength < 4) {
+                        this.style.borderColor = '#ffc107';
+                    } else {
+                        this.style.borderColor = '#28a745';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

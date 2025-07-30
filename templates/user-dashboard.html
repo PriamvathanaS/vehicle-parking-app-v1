@@ -1,0 +1,1898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Parking System - User Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%23B855C7' d='M135.2 117.4L109.1 192H402.9l-26.1-74.6C372.3 104.6 360.2 96 346.6 96H165.4c-13.6 0-25.7 8.6-30.2 21.4zM39.6 196.8L74.8 96.3C88.3 57.8 124.6 32 165.4 32H346.6c40.8 0 77.1 25.8 90.6 64.3l35.2 100.5c23.2 9.6 39.6 32.5 39.6 59.2V304c0 17.7-14.3 32-32 32H448c0 53-43 96-96 96s-96-43-96-96H256c0 53-43 96-96 96s-96-43-96-96H32c-17.7 0-32-14.3-32-32V256c0-26.7 16.4-49.6 39.6-59.2zM128 288a32 32 0 1 1 0 64 32 32 0 1 1 0-64zm288 32a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z'/></svg>" type="image/svg+xml">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --primary-purple: #E8D5F0;
+            --light-purple: #F5F0FF;
+            --dark-purple: #D4C4E3;
+            --accent-purple: #F0E6FF;
+            --medium-purple: #E0D0F0;
+            --text-dark: #4A4A4A;
+            --chart-green: #28a745;
+            --chart-blue: #007bff;
+            --chart-orange: #fd7e14;
+            --chart-red: #dc3545;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--light-purple) 0%, var(--accent-purple) 50%, var(--primary-purple) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .header-section {
+            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+            color: #444;
+            padding: 10px 0;
+            box-shadow: 0 2px 10px rgba(212, 196, 227, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: black;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255, 255, 255, 0.3);
+            color: #333;
+        }
+
+        .nav-links .separator {
+            color: #666;
+            margin: 0 5px;
+        }
+
+        .profile-section {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 2px solid var(--light-purple);
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(212, 196, 227, 0.3);
+            padding: 30px;
+            margin: 0 20px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-title {
+            color: var(--dark-purple);
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--medium-purple);
+            border-radius: 2px;
+        }
+
+        /* Summary Dashboard Styles */
+        .summary-title {
+            color: var(--medium-purple);
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .summary-subtitle {
+            color: #6c757d;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, #fff, #f8f9fa);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--light-purple);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(224, 208, 240, 0.3);
+            border-color: var(--medium-purple);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .chart-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 2px solid var(--light-purple);
+            transition: all 0.3s ease;
+            height: 450px;
+            margin-bottom: 20px;
+        }
+
+        .chart-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-color: var(--medium-purple);
+        }
+
+        .chart-title {
+            color: var(--text-dark);
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light-purple);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .charts-row {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .charts-row .chart-section {
+            flex: 1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 50px;
+            color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+            border-radius: 15px;
+            border: 2px solid #dc3545;
+        }
+
+        /* Other existing styles... */
+        .parking-lot {
+            background: rgba(248, 249, 250, 0.8);
+            border: 2px solid var(--light-purple);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .parking-lot:hover {
+            transform: translateY(-2px);
+        }
+
+        .lot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .lot-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        .lot-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .lot-status {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .status-green {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .status-red {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .parking-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            max-width: 100%;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .parking-spot {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .spot-available {
+            background-color: #28a745;
+            border-color: #1e7e34;
+            color: white;
+            cursor: pointer;
+        }
+
+        .spot-occupied {
+            background-color: #dc3545;
+            border-color: #c82333;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .spot-available:hover {
+            background-color: #218838;
+            transform: scale(1.1);
+        }
+
+        .parking-lots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dark);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--medium-purple);
+            margin-bottom: 20px;
+        }
+
+     
+       
+
+
+        .search-section {
+            background: rgba(40, 167, 69, 0.1);
+            border: 2px solid #28a745;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .booking-history-item {
+            background: rgba(248, 249, 250, 0.8);
+            border: 2px solid var(--light-purple);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .booking-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-completed {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .status-cancelled {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(45deg, var(--medium-purple), var(--dark-purple));
+            color: #444;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--medium-purple);
+            box-shadow: 0 0 0 0.2rem rgba(224, 208, 240, 0.25);
+        }
+
+        @media (max-width: 968px) {
+            .charts-row {
+                flex-direction: column;
+            }
+            
+            .nav-links {
+                font-size: 0.9rem;
+            }
+            
+            .parking-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .main-content {
+                margin: 0 10px;
+                padding: 20px;
+            }
+
+            .parking-lots-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-title {
+                font-size: 1.2rem;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .profile-section {
+                margin-top: 10px;
+            }
+
+            .chart-section {
+                height: 400px;
+                padding: 20px;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <div class="header-section">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center">
+                <!-- Left side - Title -->
+                <div class="col-auto">
+                    <h1 class="header-title">
+                        <i class="fas fa-car me-2"></i>Welcome {{user_name}}!
+                    </h1>
+                </div>
+                
+                <!-- Center - Navigation -->
+                <div class="col-auto">
+                    <div class="nav-links">
+                        <a onclick="showSection('browse')" id="nav-browse" class="active">Home</a>
+                        <span class="separator">|</span>
+                        <a onclick="showSection('bookings')" id="nav-bookings">My Bookings</a>
+                        <span class="separator">|</span>
+                        <a onclick="showSection('summary')" id="nav-summary">Summary</a>
+                    </div>
+                </div>
+                
+                <!-- Right side - Profile and Logout -->
+                <div class="col-auto">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="profile-section" onclick="showProfileModal()" style="cursor: pointer;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        
+                        <div class="profile-section" onclick="logout()" style="cursor: pointer;">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <div class="main-content">
+            
+            <!-- Browse Lots Section -->
+            <div id="browse-section" class="section active">
+                <!-- Search Section -->
+                <div class="mb-4">
+                   
+                    <div class="row">
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search by location, pin code...">
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn w-100" style="background-color: var(--medium-purple); color: black; border: none; transition: all 0.3s ease;" onclick="searchParkingLots()" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(111, 66, 193, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                <i class="fas fa-search me-2"></i>Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                
+
+                <!-- Empty State -->
+                <div id="emptyState" class="empty-state">
+                    <i class="fas fa-parking"></i>
+                    <h4>No Parking Lots Available</h4>
+                    <p>There are currently no parking lots configured in the system.</p>
+                    <p class="text-muted">Please contact the administrator to add parking locations.</p>
+                </div>
+
+                <!-- Parking Lots Container -->
+                <div id="parkingLotsContainer" class="parking-lots-grid" style="display: none;">
+                    <!-- Parking lots will be dynamically generated here -->
+                </div>
+            </div>
+
+            <!-- My Bookings Section -->
+            <div id="bookings-section" class="section">
+                <h2 class="section-title">My Parking Bookings</h2>
+                
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary">Active Bookings</h5>
+                                <h2 class="text-primary" id="activeBookingsCount">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-success">Completed</h5>
+                                <h2 class="text-success" id="completedBookingsCount">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-warning">Total Spent</h5>
+                                <h2 class="text-warning" id="totalSpent">₹0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="bookingHistoryContainer">
+                    <!-- Booking history will be populated here -->
+                </div>
+            </div>
+
+            <!-- Enhanced Summary Section -->
+            <div id="summary-section" class="section">
+                
+
+                <!-- Loading State -->
+                <div id="summaryLoadingState" class="loading">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <h4 class="mt-3">Loading Your Dashboard...</h4>
+                    <p>Please wait while we fetch your parking statistics.</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="summaryErrorState" class="error-state" style="display: none;">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    <h4 class="mt-3">Unable to Load Dashboard</h4>
+                    <p>There was an error loading your dashboard data.</p>
+                    <button class="btn btn-outline-danger" onclick="loadSummaryDashboard()">
+                        <i class="fas fa-sync-alt me-2"></i>Retry
+                    </button>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="stats-grid" id="summaryStatsGrid" style="display: none;">
+                    <!-- Stats will be loaded here -->
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row" id="summaryChartsContainer" style="display: none;">
+                    <!-- Usage by Location Chart -->
+                    <div class="chart-section">
+                        <h3 class="chart-title">Your Usage by Parking Location</h3>
+                        <div class="chart-container">
+                            <canvas id="usageChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Spending Chart -->
+                    <div class="chart-section">
+                        <h3 class="chart-title">Monthly Spending Trends</h3>
+                        <div class="chart-container">
+                            <canvas id="spendingChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user me-2"></i>User Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="profileForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="profileName" value="">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="profileEmail" value="" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="profilePhone" value="">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Pin Code</label>
+                                    <input type="text" class="form-control" id="profilePinCode" value="">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Address</label>
+                                    <textarea class="form-control" id="profileAddress" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="updateProfile()">
+                        <i class="fas fa-save me-2"></i>Update Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="modal fade" id="bookingModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-calendar-plus me-2"></i>Book Parking Spot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="bookingForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Parking Location</label>
+                                    <input type="text" class="form-control" id="bookingLocation" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Spot ID</label>
+                                    <input type="text" class="form-control" id="bookingSpotId" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Vehicle Number</label>
+                                    <input type="text" class="form-control" id="vehicleNumber" placeholder="TN01AB1234" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">In Time</label>
+                                    <input type="datetime-local" class="form-control" id="parkingInTime" onchange="calculateCost()" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Out Time</label>
+                                    <input type="datetime-local" class="form-control" id="parkingOutTime" onchange="calculateCost()" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Rate per Hour</label>
+                                    <input type="text" class="form-control" id="bookingRate" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Total Duration</label>
+                                    <input type="text" class="form-control fw-bold text-info" id="totalDuration" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Total Cost</label>
+                                    <input type="text" class="form-control fw-bold text-success" id="totalCost" readonly>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Contact Number</label>
+                                    <input type="tel" class="form-control" id="contactNumber" placeholder="+91 9876543210" required>
+                                </div>
+                            </div>
+                        </div>
+                       
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="confirmBooking()">
+                        <i class="fas fa-check me-2"></i>Confirm Booking
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Release/Delete Parking Modal -->
+    <div class="modal fade" id="releaseModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-trash me-2"></i>Delete Parking Booking</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        
+                        <h4 class="mt-3">Delete This Booking?</h4>
+                    </div>
+                    <div id="releaseDetails">
+                        <!-- Booking details will be populated here -->
+                    </div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmRelease()">
+                        <i class="fas fa-trash me-2"></i>Delete Booking
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Store parking lots data and user bookings
+        let parkingLots = [];
+        let userBookings = [];
+        let currentBookingData = {};
+        let currentUser = {};
+        let usageChart = null;
+        let spendingChart = null;
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/logout';
+            }
+        }
+
+        // Load user profile data
+        async function loadUserProfile() {
+            try {
+                const response = await fetch('/api/user/profile');
+                if (response.ok) {
+                    currentUser = await response.json();
+                    updateProfileForm();
+                } else {
+                    console.error('Failed to load user profile');
+                }
+            } catch (e) {
+                console.error('Error loading user profile:', e);
+            }
+        }
+
+        // Update profile form with user data
+        function updateProfileForm() {
+            if (currentUser.fullName) {
+                document.getElementById('profileName').value = currentUser.fullName;
+            }
+            if (currentUser.email) {
+                document.getElementById('profileEmail').value = currentUser.email;
+            }
+            if (currentUser.address) {
+                document.getElementById('profileAddress').value = currentUser.address;
+            }
+            if (currentUser.pinCode) {
+                document.getElementById('profilePinCode').value = currentUser.pinCode;
+            }
+            // Set a default phone if not available
+            if (!document.getElementById('profilePhone').value) {
+                document.getElementById('profilePhone').value = '+91 ';
+            }
+        }
+
+        // Sample data for demonstration
+        const sampleParkingLots = [
+            {
+                id: 1,
+                name: "Central Mall Parking",
+                address: "Anna Salai, Chennai - 600002",
+                pinCode: "600002",
+                pricePerHour: 30,
+                totalSpots: 20,
+                occupiedSpots: 8,
+                spots: Array.from({length: 20}, (_, i) => ({
+                    id: i + 1,
+                    occupied: i < 8,
+                    customer: i < 8 ? `Customer${i + 1}` : null
+                }))
+            },
+            {
+                id: 2,
+                name: "Phoenix MarketCity",
+                address: "Velachery Main Road, Chennai - 600042",
+                pinCode: "600042",
+                pricePerHour: 40,
+                totalSpots: 25,
+                occupiedSpots: 15,
+                spots: Array.from({length: 25}, (_, i) => ({
+                    id: i + 1,
+                    occupied: i < 15,
+                    customer: i < 15 ? `Customer${i + 1}` : null
+                }))
+            },
+            {
+                id: 3,
+                name: "T Nagar Shopping Complex",
+                address: "Ranganathan Street, T Nagar - 600017",
+                pinCode: "600017",
+                pricePerHour: 25,
+                totalSpots: 15,
+                occupiedSpots: 5,
+                spots: Array.from({length: 15}, (_, i) => ({
+                    id: i + 1,
+                    occupied: i < 5,
+                    customer: i < 5 ? `Customer${i + 1}` : null
+                }))
+            }
+        ];
+
+        // Sample booking history with more data for charts
+        const sampleBookings = [
+            {
+                id: 1,
+                lotName: "Central Mall Parking",
+                spotId: 12,
+                vehicleNumber: "TN01AB1234",
+                startTime: "2024-01-15 10:30:00",
+                endTime: "2024-01-15 14:30:00",
+                duration: 4,
+                cost: 120,
+                status: "completed",
+                month: "January"
+            },
+            {
+                id: 2,
+                lotName: "Phoenix MarketCity",
+                spotId: 8,
+                vehicleNumber: "TN01AB1234",
+                startTime: "2024-01-16 09:00:00",
+                endTime: "2024-01-16 12:00:00",
+                duration: 3,
+                cost: 120,
+                status: "completed",
+                month: "January"
+            },
+            {
+                id: 3,
+                lotName: "Central Mall Parking",
+                spotId: 5,
+                vehicleNumber: "TN01AB1234",
+                startTime: "2024-02-10 11:00:00",
+                endTime: "2024-02-10 15:30:00",
+                duration: 4.5,
+                cost: 135,
+                status: "completed",
+                month: "February"
+            },
+            {
+                id: 4,
+                lotName: "T Nagar Shopping Complex",
+                spotId: 3,
+                vehicleNumber: "TN01AB1234",
+                startTime: "2024-02-20 14:00:00",
+                endTime: "2024-02-20 17:00:00",
+                duration: 3,
+                cost: 75,
+                status: "completed",
+                month: "February"
+            },
+            {
+                id: 5,
+                lotName: "Phoenix MarketCity",
+                spotId: 12,
+                vehicleNumber: "TN01AB1234",
+                startTime: "2024-03-05 10:00:00",
+                endTime: null,
+                duration: 2,
+                cost: 80,
+                status: "active",
+                month: "March"
+            }
+        ];
+
+        // Load parking lots from backend or use sample data
+        async function loadParkingLots() {
+            try {
+                const response = await fetch('/api/lots');
+                if (response.ok) {
+                    parkingLots = await response.json();
+                } else {
+                    console.log('Using sample data for demonstration');
+                    parkingLots = sampleParkingLots;
+                }
+            } catch (e) {
+                console.log('Using sample data for demonstration');
+                parkingLots = sampleParkingLots;
+            }
+        }
+
+        // Load Summary Dashboard
+        async function loadSummaryDashboard() {
+            showSummaryLoading();
+            
+            try {
+                // Fetch user statistics from API
+                const statsResponse = await fetch('/api/user/stats');
+                if (!statsResponse.ok) throw new Error('Failed to fetch user statistics');
+                const userStats = await statsResponse.json();
+
+                // Fetch user bookings for additional chart data
+                const bookingsResponse = await fetch('/api/user/bookings');
+                if (!bookingsResponse.ok) throw new Error('Failed to fetch user bookings');
+                userBookings = await bookingsResponse.json();
+                
+                displaySummaryStatistics(userStats);
+                displaySummaryCharts(userStats);
+                showSummaryCharts();
+
+            } catch (error) {
+                console.error('Summary dashboard loading error:', error);
+                showSummaryError();
+            }
+        }
+
+        // Show summary loading state
+        function showSummaryLoading() {
+            document.getElementById('summaryLoadingState').style.display = 'block';
+            document.getElementById('summaryErrorState').style.display = 'none';
+            document.getElementById('summaryChartsContainer').style.display = 'none';
+            document.getElementById('summaryStatsGrid').style.display = 'none';
+        }
+
+        // Show summary error state
+        function showSummaryError() {
+            document.getElementById('summaryLoadingState').style.display = 'none';
+            document.getElementById('summaryErrorState').style.display = 'block';
+            document.getElementById('summaryChartsContainer').style.display = 'none';
+            document.getElementById('summaryStatsGrid').style.display = 'none';
+        }
+
+        // Show summary charts
+        function showSummaryCharts() {
+            document.getElementById('summaryLoadingState').style.display = 'none';
+            document.getElementById('summaryErrorState').style.display = 'none';
+            document.getElementById('summaryChartsContainer').style.display = 'flex';
+            document.getElementById('summaryStatsGrid').style.display = 'grid';
+        }
+
+        // Display summary statistics
+        function displaySummaryStatistics(userStats) {
+            const statsData = [
+                {
+                    icon: 'fas fa-calendar-check',
+                    number: userStats.totalBookings,
+                    label: 'Total Bookings',
+                    color: 'var(--chart-blue)'
+                },             
+                {
+                    icon: 'fas fa-car',
+                    number: userStats.activeBookings,
+                    label: 'Active Bookings',
+                    color: 'var(--medium-purple)'
+                },
+                {
+                    icon: 'fas fa-check-circle',
+                    number: userStats.completedBookings,
+                    label: 'Completed',
+                    color: 'var(--chart-green)'
+                }
+            ];
+
+            const statsGrid = document.getElementById('summaryStatsGrid');
+            statsGrid.innerHTML = statsData.map(stat => `
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="${stat.icon}" style="color: ${stat.color}"></i>
+                    </div>
+                    <div class="stat-number">${stat.number}</div>
+                    <div class="stat-label">${stat.label}</div>
+                </div>
+            `).join('');
+        }
+
+        // Display summary charts
+        function displaySummaryCharts(userStats) {
+            createUsageChart(userStats.locationUsage);
+            createSpendingChart(userStats.monthlySpending);
+        }
+
+        // Create usage pie chart
+        function createUsageChart(locationUsage) {
+            const ctx = document.getElementById('usageChart').getContext('2d');
+            
+            if (usageChart) {
+                usageChart.destroy();
+            }
+
+            if (!locationUsage || locationUsage.length === 0) {
+                // Show empty state
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#666';
+                ctx.textAlign = 'center';
+                ctx.fillText('No data available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+
+            const colors = ['#28a745', '#007bff', '#fd7e14', '#dc3545', '#6f42c1', '#20c997'];
+            const locations = locationUsage.map(item => item.name);
+            const hours = locationUsage.map(item => item.hours);
+
+            usageChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: locations,
+                    datasets: [{
+                        data: hours,
+                        backgroundColor: colors.slice(0, locations.length),
+                        borderColor: '#fff',
+                        borderWidth: 3,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const hours = context.raw;
+                                    const bookings = locationUsage[context.dataIndex].bookings;
+                                    return [`${context.label}: ${hours} hours`, `${bookings} bookings`];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create spending line chart
+        function createSpendingChart(monthlySpending) {
+            const ctx = document.getElementById('spendingChart').getContext('2d');
+            
+            if (spendingChart) {
+                spendingChart.destroy();
+            }
+
+            if (!monthlySpending || monthlySpending.length === 0) {
+                // Show empty state
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#666';
+                ctx.textAlign = 'center';
+                ctx.fillText('No data available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+
+            const months = monthlySpending.map(item => item.month);
+            const spending = monthlySpending.map(item => item.amount);
+
+            spendingChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Monthly Spending (₹)',
+                        data: spending,
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#007bff',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Spent: ₹${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                },
+                                callback: function(value) {
+                                    return '₹' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize the application
+        async function initializeApp() {
+            await loadUserProfile();
+            await loadParkingLots();
+            userBookings = sampleBookings; // Load from backend in real implementation
+            updateDisplay();
+            updateBookingStats();
+        }
+
+        // Navigation functions
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(`${sectionName}-section`).classList.add('active');
+            document.getElementById(`nav-${sectionName}`).classList.add('active');
+            
+            // Load section-specific data
+            if (sectionName === 'bookings') {
+                loadBookingHistory();
+            } else if (sectionName === 'summary') {
+                loadSummaryDashboard();
+            }
+        }
+
+        // Show profile modal
+        function showProfileModal() {
+            updateProfileForm();
+            const modal = new bootstrap.Modal(document.getElementById('profileModal'));
+            modal.show();
+        }
+
+        // Update the display based on current state
+        function updateDisplay() {
+            const container = document.getElementById('parkingLotsContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (parkingLots.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+            } else {
+                container.style.display = 'grid';
+                emptyState.style.display = 'none';
+                renderAllParkingLots();
+            }
+        }
+
+        // Render all parking lots
+        function renderAllParkingLots() {
+            const container = document.getElementById('parkingLotsContainer');
+            container.innerHTML = '';
+            
+            parkingLots.forEach(lot => {
+                addLotToDOM(lot);
+            });
+        }
+
+        // Add lot HTML to DOM
+        function addLotToDOM(lot) {
+            const container = document.getElementById('parkingLotsContainer');
+            const availableSpots = lot.totalSpots - lot.occupiedSpots;
+            const occupancyPercentage = Math.round((lot.occupiedSpots / lot.totalSpots) * 100);
+            
+            let statusText, statusClass;
+            if (availableSpots === 0) {
+                statusText = 'Full - No spots available';
+                statusClass = 'status-red';
+            } else if (availableSpots <= 2) {
+                statusText = 'Almost Full - Limited spots';
+                statusClass = 'status-orange';
+            } else {
+                statusText = 'Available - Spots open';
+                statusClass = 'status-green';
+            }
+            
+            const lotHtml = `
+                <div class="parking-lot">
+                    <div class="lot-header">
+                        <div>
+                            <div class="lot-title">${lot.name}</div>
+                            <div class="lot-info">
+                                <i class="fas fa-map-marker-alt me-1"></i>${lot.address}
+                                <br><i class="fas fa-tag me-1"></i>₹${lot.pricePerHour}/hour
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lot-status">
+                        <span class="${statusClass}">${statusText}</span><br>
+                        <span class="text-muted">Available: ${availableSpots}/${lot.totalSpots} spots (${100 - occupancyPercentage}% free)</span>
+                    </div>
+                    <div class="parking-grid" id="lot${lot.id}-grid">
+                        ${renderParkingSpots(lot)}
+                    </div>
+                   
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', lotHtml);
+        }
+
+        // Render parking spots for a lot
+        function renderParkingSpots(lot) {
+            let spotsHtml = '';
+            
+            lot.spots.forEach(spot => {
+                const spotClass = spot.occupied ? 'spot-occupied' : 'spot-available';
+                const spotText = spot.occupied ? 'O' : spot.id;
+                const clickHandler = spot.occupied ? '' : `onclick="selectSpot(${lot.id}, ${spot.id})"`;
+                
+                spotsHtml += `
+                    <div class="parking-spot ${spotClass}" 
+                         ${clickHandler}
+                         title="${spot.occupied ? 'Occupied' : 'Available - Click to book'}">
+                        ${spotText}
+                    </div>
+                `;
+            });
+            
+            return spotsHtml;
+        }
+
+        // Quick booking function
+        function showQuickBooking(lotId) {
+            const lot = parkingLots.find(l => l.id === lotId);
+            if (!lot) return;
+            
+            const availableSpots = lot.spots.filter(s => !s.occupied);
+            
+            if (availableSpots.length === 0) {
+                alert('Sorry, no spots are currently available at this location.');
+                return;
+            }
+            
+            // Auto-select first available spot
+            const firstAvailableSpot = availableSpots[0];
+            selectSpot(lotId, firstAvailableSpot.id);
+        }
+
+        // Select a specific spot for booking
+        function selectSpot(lotId, spotId) {
+            const lot = parkingLots.find(l => l.id === lotId);
+            if (!lot) return;
+            
+            const spot = lot.spots.find(s => s.id === spotId);
+            if (!spot || spot.occupied) {
+                alert('This spot is not available for booking.');
+                return;
+            }
+            
+            // Store booking data
+            currentBookingData = {
+                lotId: lotId,
+                spotId: spotId,
+                lotName: lot.name,
+                address: lot.address,
+                pricePerHour: lot.pricePerHour
+            };
+            
+            // Populate modal
+            document.getElementById('bookingLocation').value = lot.name;
+            document.getElementById('bookingSpotId').value = spotId;
+            document.getElementById('bookingRate').value = `₹${lot.pricePerHour}`;
+            
+            // Clear previous values
+            document.getElementById('vehicleNumber').value = '';
+            document.getElementById('contactNumber').value = '';
+            document.getElementById('totalDuration').value = '';
+            document.getElementById('totalCost').value = '';
+            
+            // Set default times (current time and 2 hours later)
+            const now = new Date();
+            const twoHoursLater = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+            
+            // Format to datetime-local format (YYYY-MM-DDTHH:MM)
+            const formatDateTime = (date) => {
+                return date.getFullYear() + '-' + 
+                       String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(date.getDate()).padStart(2, '0') + 'T' + 
+                       String(date.getHours()).padStart(2, '0') + ':' + 
+                       String(date.getMinutes()).padStart(2, '0');
+            };
+            
+            document.getElementById('parkingInTime').value = formatDateTime(now);
+            document.getElementById('parkingOutTime').value = formatDateTime(twoHoursLater);
+            
+            // Calculate initial cost
+            calculateCost();
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+            modal.show();
+        }
+
+        // Calculate cost based on duration
+        function calculateCost() {
+            const inTime = document.getElementById('parkingInTime').value;
+            const outTime = document.getElementById('parkingOutTime').value;
+            
+            if (inTime && outTime && currentBookingData.pricePerHour) {
+                const inDateTime = new Date(inTime);
+                const outDateTime = new Date(outTime);
+                
+                // Validate times
+                if (outDateTime <= inDateTime) {
+                    document.getElementById('totalDuration').value = 'Invalid time range';
+                    document.getElementById('totalCost').value = 'Invalid: Out time must be after in time';
+                    return;
+                }
+                
+                // Calculate duration in milliseconds and convert to hours/minutes
+                const durationMs = outDateTime - inDateTime;
+                const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
+                const durationMinutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+                
+                // Calculate billing hours (rounded up)
+                const billingHours = Math.ceil(durationMs / (1000 * 60 * 60));
+                
+                // Format duration display
+                let durationText = '';
+                if (durationHours > 0) {
+                    durationText = `${durationHours}h ${durationMinutes}m`;
+                } else {
+                    durationText = `${durationMinutes}m`;
+                }
+                
+                // Add billing info if different from actual duration
+                if (billingHours !== durationHours || durationMinutes > 0) {
+                    durationText += ` (billed as ${billingHours}h)`;
+                }
+                
+                const cost = billingHours * currentBookingData.pricePerHour;
+                
+                document.getElementById('totalDuration').value = durationText;
+                document.getElementById('totalCost').value = `₹${cost}`;
+            }
+        }
+
+        // Confirm booking
+        async function confirmBooking() {
+            const vehicleNumber = document.getElementById('vehicleNumber').value.trim();
+            const inTime = document.getElementById('parkingInTime').value;
+            const outTime = document.getElementById('parkingOutTime').value;
+            const contactNumber = document.getElementById('contactNumber').value.trim();
+            
+            if (!vehicleNumber || !inTime || !outTime || !contactNumber) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            // Validate times
+            const inDateTime = new Date(inTime);
+            const outDateTime = new Date(outTime);
+            
+            if (outDateTime <= inDateTime) {
+                alert('Out time must be after in time.');
+                return;
+            }
+            
+            // Validate vehicle number format (basic validation)
+            const vehicleRegex = /^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$/;
+            if (!vehicleRegex.test(vehicleNumber.replace(/\s+/g, ''))) {
+                alert('Please enter a valid vehicle number (e.g., TN01AB1234)');
+                return;
+            }
+
+            // Show loading state
+            const confirmButton = document.querySelector('#bookingModal .btn-success');
+            const originalButtonText = confirmButton.innerHTML;
+            confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Booking...';
+            confirmButton.disabled = true;
+
+            try {
+                // Prepare booking data for API
+                const bookingData = {
+                    lotId: currentBookingData.lotId,
+                    spotId: currentBookingData.spotId,
+                    vehicleNumber: vehicleNumber.toUpperCase(),
+                    contactNumber: contactNumber,
+                    parkingTimestamp: inDateTime.toISOString(),
+                    leavingTimestamp: outDateTime.toISOString()
+                };
+
+                console.log('🔧 DEBUG: Sending booking data:', bookingData);
+
+                // Make API call to book parking spot
+                const response = await fetch('/api/book_parking_spot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+
+                const result = await response.json();
+                console.log('🔧 DEBUG: API response:', result);
+
+                if (response.ok && result.success) {
+                    // Booking successful - update local data
+                    const booking = {
+                        id: result.booking.id,
+                        lotId: result.booking.lotId,
+                        lotName: result.booking.lotName,
+                        spotId: result.booking.spotId,
+                        vehicleNumber: result.booking.vehicleNumber,
+                        contactNumber: result.booking.contactNumber,
+                        startTime: result.booking.parkingTimestamp,
+                        endTime: result.booking.leavingTimestamp,
+                        plannedEndTime: result.booking.leavingTimestamp,
+                        duration: result.booking.duration,
+                        cost: result.booking.totalCost,
+                        status: 'active'
+                    };
+
+                    // Add to user bookings
+                    userBookings.push(booking);
+
+                    // Update spot status in local data
+                    const lot = parkingLots.find(l => l.id === currentBookingData.lotId);
+                    if (lot) {
+                        const spot = lot.spots.find(s => s.id === currentBookingData.spotId);
+                        if (spot) {
+                            spot.occupied = true;
+                            spot.customer = vehicleNumber;
+                        }
+                        lot.occupiedSpots++;
+                    }
+
+                    // Update display
+                    updateDisplay();
+                    updateBookingStats();
+
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('bookingModal'));
+                    modal.hide();
+
+                    // Show success message
+                    alert(`✅ Booking Confirmed Successfully!
+
+Booking ID: ${result.booking.id}
+Location: ${result.booking.lotName}
+Spot: ${result.booking.spotId}
+Vehicle: ${result.booking.vehicleNumber}
+In Time: ${new Date(result.booking.parkingTimestamp).toLocaleString()}
+Out Time: ${new Date(result.booking.leavingTimestamp).toLocaleString()}
+Duration: ${result.booking.duration} hours
+Total Cost: ₹${result.booking.totalCost}
+
+✅ Data saved to database successfully!
+
+Please proceed to the location and park in spot ${result.booking.spotId}.
+Contact: ${result.booking.contactNumber}`);
+
+                } else {
+                    // Booking failed
+                    const errorMessage = result.error || 'Unknown error occurred';
+                    console.error('❌ Booking failed:', errorMessage);
+                    alert(`❌ Booking Failed!
+
+Error: ${errorMessage}
+
+Please try again or contact support if the issue persists.`);
+                }
+
+            } catch (error) {
+                console.error('❌ Network error during booking:', error);
+                alert(`❌ Booking Failed!
+
+Network Error: ${error.message}
+
+Please check your internet connection and try again.`);
+            } finally {
+                // Restore button state
+                confirmButton.innerHTML = originalButtonText;
+                confirmButton.disabled = false;
+            }
+        }
+
+        // Load booking history from API
+        async function loadBookingHistory() {
+            const container = document.getElementById('bookingHistoryContainer');
+            
+            try {
+                // Fetch booking history from API
+                const response = await fetch('/api/user/bookings');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch booking history');
+                }
+                
+                const bookings = await response.json();
+                
+                if (bookings.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <h4>No Booking History</h4>
+                            <p>You haven't made any parking bookings yet.</p>
+                            <button class="btn btn-primary" onclick="showSection('browse')">
+                                <i class="fas fa-search me-2"></i>Find Parking
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Update global userBookings for other functions
+                userBookings = bookings;
+                
+                let html = '';
+                bookings.forEach(booking => {
+                    const statusClass = booking.status === 'active' ? 'status-active' : 
+                                     booking.status === 'completed' ? 'status-completed' : 'status-cancelled';
+                    
+                    const startTime = new Date(booking.startTime).toLocaleString();
+                    const endTime = booking.endTime ? new Date(booking.endTime).toLocaleString() : 'Ongoing';
+                    
+                    html += `
+                        <div class="booking-history-item">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h6 class="mb-1">${booking.lotName}</h6>
+                                    <div class="text-muted small">
+                                        <i class="fas fa-car me-1"></i>Spot ${booking.spotId} • ${booking.vehicleNumber}
+                                        <br><i class="fas fa-clock me-1"></i>${startTime} - ${endTime}
+                                        <br><i class="fas fa-rupee-sign me-1"></i>₹${booking.cost} (${booking.duration} hours)
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <span class="booking-status ${statusClass}">${booking.status.toUpperCase()}</span>
+                                    ${booking.status === 'active' ? 
+                                        `<br><button class="btn btn-danger btn-sm mt-2" onclick="showReleaseModal(${booking.id})">
+                                            <i class="fas fa-trash me-1"></i>Delete
+                                        </button>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                
+                // Update booking statistics
+                updateBookingStats();
+                
+            } catch (error) {
+                console.error('Error loading booking history:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                        <h4>Error Loading Bookings</h4>
+                        <p>Unable to load your booking history. Please try again.</p>
+                        <button class="btn btn-primary" onclick="loadBookingHistory()">
+                            <i class="fas fa-refresh me-2"></i>Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Update booking statistics
+        function updateBookingStats() {
+            const activeBookings = userBookings.filter(b => b.status === 'active').length;
+            const completedBookings = userBookings.filter(b => b.status === 'completed').length;
+            const totalSpent = userBookings.reduce((sum, b) => sum + b.cost, 0);
+            
+            document.getElementById('activeBookingsCount').textContent = activeBookings;
+            document.getElementById('completedBookingsCount').textContent = completedBookings;
+            document.getElementById('totalSpent').textContent = `₹${totalSpent}`;
+        }
+
+        // Show delete modal
+        function showReleaseModal(bookingId) {
+            const booking = userBookings.find(b => b.id === bookingId);
+            if (!booking) return;
+            
+            const startTime = new Date(booking.startTime);
+            const currentTime = new Date();
+            const actualDuration = Math.ceil((currentTime - startTime) / (1000 * 60 * 60)); // hours
+            const actualCost = actualDuration * (booking.cost / booking.duration);
+            
+            document.getElementById('releaseDetails').innerHTML = `
+                <div class="row mb-3">
+                    <div class="col-6"><strong>Location:</strong></div>
+                    <div class="col-6">${booking.lotName}</div>
+                    <div class="col-6"><strong>Spot ID:</strong></div>
+                    <div class="col-6">${booking.spotId}</div>
+                    <div class="col-6"><strong>Vehicle:</strong></div>
+                    <div class="col-6">${booking.vehicleNumber}</div>
+                    <div class="col-6"><strong>Start Time:</strong></div>
+                    <div class="col-6">${new Date(booking.startTime).toLocaleString()}</div>
+                    <div class="col-6"><strong>Expected End:</strong></div>
+                    <div class="col-6">${booking.endTime ? new Date(booking.endTime).toLocaleString() : 'Ongoing'}</div>
+                    <div class="col-6"><strong>Booking Status:</strong></div>
+                    <div class="col-6"><span class="badge ${booking.status === 'active' ? 'bg-success' : 'bg-secondary'}">${booking.status.toUpperCase()}</span></div>
+                </div>
+                
+            `;
+            
+            // Store for deletion
+            window.currentReleaseBooking = booking;
+            window.actualCost = actualCost;
+            
+            const modal = new bootstrap.Modal(document.getElementById('releaseModal'));
+            modal.show();
+        }
+
+        // Confirm release - This will DELETE the booking from database
+        async function confirmRelease() {
+            const booking = window.currentReleaseBooking;
+            if (!booking) return;
+            
+            // Show loading state
+            const confirmButton = document.querySelector('#releaseModal .btn-danger');
+            const originalButtonText = confirmButton.innerHTML;
+            confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Deleting...';
+            confirmButton.disabled = true;
+            
+            try {
+                // Call API to delete parking booking and free up spot
+                const response = await fetch('/api/delete_parking_spot', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reservationId: booking.id
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    // Deletion successful
+                    const deletedBooking = result.deletedBooking;
+                    
+                    // Update displays
+                    await loadParkingLots();
+                    await loadBookingHistory();
+                    updateDisplay();
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('releaseModal'));
+                    modal.hide();
+                   
+                    
+                } else {
+                    // Deletion failed
+                    const errorMessage = result.error || 'Unknown error occurred';
+                    alert(`❌ Deletion Failed!
+
+Error: ${errorMessage}
+
+Please try again or contact support if the issue persists.`);
+                }
+                
+            } catch (error) {
+                console.error('Error deleting parking booking:', error);
+                alert(`❌ Deletion Failed!
+
+Network Error: ${error.message}
+
+Please check your internet connection and try again.`);
+            } finally {
+                // Restore button state
+                confirmButton.innerHTML = originalButtonText;
+                confirmButton.disabled = false;
+            }
+        }
+
+        // Search parking lots
+        function searchParkingLots() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                updateDisplay();
+                return;
+            }
+            
+            const filteredLots = parkingLots.filter(lot => 
+                lot.name.toLowerCase().includes(searchTerm) ||
+                lot.address.toLowerCase().includes(searchTerm) ||
+                lot.pinCode.includes(searchTerm)
+            );
+            
+            const container = document.getElementById('parkingLotsContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (filteredLots.length === 0) {
+                container.style.display = 'none';
+                emptyState.innerHTML = `
+                    <i class="fas fa-search"></i>
+                    <h4>No Results Found</h4>
+                    <p>No parking lots found matching "${searchTerm}"</p>
+                    <button class="btn btn-primary" onclick="document.getElementById('searchInput').value=''; updateDisplay();">
+                        <i class="fas fa-times me-2"></i>Clear Search
+                    </button>
+                `;
+                emptyState.style.display = 'block';
+            } else {
+                container.innerHTML = '';
+                filteredLots.forEach(lot => addLotToDOM(lot));
+                container.style.display = 'grid';
+                emptyState.style.display = 'none';
+            }
+        }
+
+        // Update profile
+        async function updateProfile() {
+            const name = document.getElementById('profileName').value.trim();
+            const pinCode = document.getElementById('profilePinCode').value.trim();
+            const address = document.getElementById('profileAddress').value.trim();
+            
+            if (!name || !pinCode || !address) {
+                alert('Please fill in all required fields (Name, Pin Code, Address).');
+                return;
+            }
+            
+            try {
+                // Show loading state
+                const updateButton = document.querySelector('#profileModal .btn-primary');
+                const originalButtonText = updateButton.innerHTML;
+                updateButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+                updateButton.disabled = true;
+                
+                const response = await fetch('/api/user/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fullName: name,
+                        address: address,
+                        pinCode: pinCode
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    alert(`✅ Profile Updated Successfully!
+
+Name: ${result.user.fullName}
+Pin Code: ${result.user.pinCode}
+Address: ${result.user.address}
+
+Your profile has been saved to the database.`);
+                    
+                    // Update current user data
+                    currentUser = result.user;
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
+                    modal.hide();
+                    
+                } else {
+                    alert(`❌ Error updating profile: ${result.error || 'Unknown error'}`);
+                }
+                
+                // Restore button state
+                updateButton.innerHTML = originalButtonText;
+                updateButton.disabled = false;
+                
+            } catch (error) {
+                alert(`❌ Error updating profile: ${error.message}`);
+                console.error('Profile update error:', error);
+                
+                // Restore button state
+                const updateButton = document.querySelector('#profileModal .btn-primary');
+                updateButton.innerHTML = '<i class="fas fa-save me-2"></i>Update Profile';
+                updateButton.disabled = false;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(async () => {
+                await loadParkingLots();
+                updateDisplay();
+            }, 30000);
+            
+            // Add enter key support for search
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchParkingLots();
+                }
+            });
+        });
+
+        // Handle window resize for responsive charts
+        window.addEventListener('resize', function() {
+            if (usageChart) usageChart.resize();
+            if (spendingChart) spendingChart.resize();
+        });
+    </script>
+</body>
+</html>
